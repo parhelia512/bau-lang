@@ -55,7 +55,11 @@
 * Unsigned integer are intentionally not supported to simplify learning and
   using the language, to avoid surprising behavior and edge cases,
   and to reduce security issues and error-handling pitfalls.
-  When needed, unsigned behavior is available through explicit operations.
+  Unsigned types sound simple on the surface, but they are not,
+  and they can cause issues that are hard to protect against
+  and are hard to solve.
+  When needed, unsigned behavior is available through explicit operations
+  (eg. unsigned division).
   This design does not affect performance or memory usage.
 
 ### Syntax
