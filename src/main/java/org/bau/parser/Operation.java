@@ -230,6 +230,12 @@ public class Operation implements Expression {
             break;
         case "=":
             if (l == ValueNull.INSTANCE || r == ValueNull.INSTANCE) {
+                if (l instanceof Value.ValueRef && l.get().longValue() == 0) {
+                    l = ValueNull.INSTANCE;
+                }
+                if (r instanceof Value.ValueRef && r.get().longValue() == 0) {
+                    r = ValueNull.INSTANCE;
+                }
                 result = l == r ? 1 : 0;
             } else {
                 result = l.longValue() == r.longValue() ? 1 : 0;
@@ -237,6 +243,12 @@ public class Operation implements Expression {
             break;
         case "<>":
             if (l == ValueNull.INSTANCE || r == ValueNull.INSTANCE) {
+                if (l instanceof Value.ValueRef && l.get().longValue() == 0) {
+                    l = ValueNull.INSTANCE;
+                }
+                if (r instanceof Value.ValueRef && r.get().longValue() == 0) {
+                    r = ValueNull.INSTANCE;
+                }
                 result = l != r ? 1 : 0;
             } else {
                 result = l.longValue() != r.longValue() ? 1 : 0;
@@ -295,6 +307,12 @@ public class Operation implements Expression {
             break;
         case "=":
             if (l == ValueNull.INSTANCE || r == ValueNull.INSTANCE) {
+                if (l instanceof Value.ValueRef && l.get().longValue() == 0) {
+                    l = ValueNull.INSTANCE;
+                }
+                if (r instanceof Value.ValueRef && r.get().longValue() == 0) {
+                    r = ValueNull.INSTANCE;
+                }
                 longResult = l == r ? 1 : 0;
             } else {
                 longResult = l.doubleValue() == r.doubleValue() ? 1 : 0;
@@ -302,6 +320,12 @@ public class Operation implements Expression {
             break;
         case "<>":
             if (l == ValueNull.INSTANCE || r == ValueNull.INSTANCE) {
+                if (l instanceof Value.ValueRef && l.get().longValue() == 0) {
+                    l = ValueNull.INSTANCE;
+                }
+                if (r instanceof Value.ValueRef && r.get().longValue() == 0) {
+                    r = ValueNull.INSTANCE;
+                }
                 longResult = l != r ? 1 : 0;
             } else {
                 longResult = l.doubleValue() != r.doubleValue() ? 1 : 0;

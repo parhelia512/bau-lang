@@ -5,7 +5,11 @@ package org.bau;
 Name: Lei, Kuona, Mya, Pha, Tau (Anouk), Atlas, Soma (Anouk2), Twelve, Ro
 https://github.com/NicoNex/tau
 
+raw string that are shifted too much to the left
+
 yn: input('Is the number larger than ' x ' ?')
+
+tiny vector font renderer
 
 how can HashMap.get return V and is not required to return V? (nullable)
 
