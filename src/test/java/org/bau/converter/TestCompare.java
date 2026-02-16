@@ -31,6 +31,11 @@ find src/test -name "*.c.out" -delete
 public class TestCompare {
 
     @Test
+    public void at() throws IOException {
+        test("at");
+    }
+
+    @Test
     public void arrayBounds() throws IOException {
         test("arrayBounds");
     }

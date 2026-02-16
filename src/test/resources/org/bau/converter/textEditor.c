@@ -1087,6 +1087,7 @@ void org_bau_List_List_org_bau_String_string_remove_2(org_bau_List_List_org_bau_
         this->array->data[idx_2(pos, _arrayLen(this->array))] = this->array->data[idx_2(pos + 1, _arrayLen(this->array))];
         pos += 1;
     }
+    this->size -= 1;
     this->array->data[idx_2(pos, _arrayLen(this->array))] = org_bau_String_string_new();
 }
 org_bau_String_StringBuilder* org_bau_String_StringBuilder_1(i8_array* data) {

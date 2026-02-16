@@ -1,0 +1,600 @@
+# The @ Language Interpreter
+# Converted from At.java to Bau
+
+import org.bau.List
+    List
+    newList
+import org.bau.HashMap
+    newHashMap
+    HashMap
+    hashCode
+import org.bau.String
+    string
+    StringBuilder
+    str
+import org.bau.Arrays
+    equals
+import org.bau.Int
+    intToString
+import org.bau.Math
+    floatToString
+
+fun main()
+    at := newAt()
+    result : at.run(``
+        'Math Library, partially minified';
+        POS_INFINITY:1/0;NEG_INFINITY:-1/0;NOT_A_NUMBER:0/0;
+        PI:3.14159265358979323846;E:2.71828182845904523536;
+        LOG10:2.30258509299404568402;LOG2:0.69314718055994530942;
+        fun abs(x)       {?x>=0{=x};=-x}
+        fun isNaN(x)     {=x<>x}
+        fun isNegZero(x) {=(x=0)&(1/x=NEG_INFINITY)}
+        fun min(a,b)     { if isNaN(a) { return a } 
+                   if a = b & a = 0 & isNegZero(b) { return b }
+                   if a <= b {return a }
+                   return b }
+        fun max(a,b)     { if isNaN(a) { return a } 
+                   if a = b & a = 0 & isNegZero(a) { return b }
+                   if a >= b { return a }
+                   return b }
+        fun floor(x)     { if isNaN(x) | x = 0 { return x }
+                   i : x | 0; d : i;
+                   if d = x | x >= 0 { return d } 
+                   return d - 1 }
+        fun ceil(x)      { return -floor(-x) }
+        fun round(x)     { if isNaN(x) { return 0 }
+                   return (x + 0.5) | 0 }
+        fun signum(x)    { if x = 0.0 | isNaN(x) { return x }
+                   if x >= 0 { return 1 }
+                   return -1 }
+        fun exp(x)       { if isNaN(x) | x = POS_INFINITY { return x }
+                   if x < 0 { return 1 / exp(-x) }
+                   if x > 2 { r : exp(x / 2);  return r * r }
+                   approx : 1.0; term : 1.0; 
+                   i : 1; while i < 22 { term:term*x/i ; approx:approx+term; i:i+1 }
+                   return approx }
+        fun log(x)       { if x = 0 { return NEG_INFINITY }
+                   if x = POS_INFINITY { return x }
+                   if x <= 0 | isNaN(x) { return NOT_A_NUMBER }
+                   if x < 0.7 { return log(2 * x) - LOG2 }
+                   if x >= 1.5 { return log(x / 2) + LOG2 }
+                   base:x-1; sign:1; term:base; result:term;
+                   i : 2; while i < 30 {sign:-sign; term : term * base; 
+                   result:result+sign*term/i; i:i+1}
+                   return result }
+        fun sqrt(x)      {=exp(log(x)/2)}
+        fun log10(x)     {=log(x)/LOG10}
+        fun e(x,n)       {@n>0{x:x*10;n:n-1};@n<0{x:x/10;n:n+1};=x} 
+        fun pow(x,y)     { if x > 0 & y > 0 { return exp(y * log(x)) }
+                   if y = 0.0 { return 1.0 }
+                   if isNaN(x) | isNaN(y) { return NOT_A_NUMBER }
+                   absX : abs(x); if y = NEG_INFINITY {
+                     if absX > 1.0 { return 0.0 }
+                     if absX = 1.0 { return NOT_A_NUMBER }
+                     return POS_INFINITY }
+                   yy : y | 0; odd : (yy = y) & ((yy & 1) = 1);
+                   if isNegZero(x) & yy = y { if odd { return -pow(-x, y) } return pow(-x, y) }
+                   if x >= 0 { return exp(y * log(x)) }
+                   if odd { return -pow(-x, y) }
+                   if x = NEG_INFINITY { if y < 0 { return 0.0 } return POS_INFINITY }
+                   if yy = y { return pow(-x, y) }
+                   if abs(y) > e(1,19) { if y > 0 { return pow(-x, y) } 
+                   if x = -1 { return 1 } if absX > 1 { return 0 } return POS_INFINITY }
+                   return NOT_A_NUMBER }
+        fun sin(x)       { if x = POS_INFINITY { return NOT_A_NUMBER }
+                   if abs(x) < e(1,-8) { return x }
+                   if x < 0 {return -sin(-x) }
+                   if x > PI * 2 { x : x - floor(x / (PI * 2)) * (PI * 2) }
+                   if x > PI { return -sin(x - PI) }
+                   if x > PI / 2 { x : PI - x }
+                   approx : 0.0; sign : 1; p : x; n : 2;
+                   while n < 24 {
+                     approx : approx + sign * p;
+                     p : p * x * x / (n * (n + 1)); sign : -sign; n:n+2;
+                   } return approx; }
+        fun atan(x)      { x : min(max(e(-1,16), x), e(1,16));
+                   if abs(x) >= 0.4 { return 2 * atan(x / (1 + sqrt(1 + x * x))) }
+                   approx : x; sign : -1; p : x;
+                   n:3; while n < 32 {
+                     p : p * x * x; approx : approx + sign * p / n;
+                     sign : -sign; n:n+1
+                   } return approx; }
+        fun cos(x) {=sin(x+PI/2)}
+        fun tan(x) {=sin(x)/cos(x)}
+        fun asin(x) {=atan(x/sqrt(1-x*x))}
+        fun acos(x) {=PI/2-asin(x)}
+        
+        print('pow(2, 10) ' pow(2, 10));
+        print('sqrt(2) ' sqrt(2));
+        print('sin(0.5) ' sin(0.5));
+        print('cos(0.5) ' cos(0.5));
+        print('tan(0.5) ' tan(0.5));
+        print('asin(0.5) ' asin(0.5));
+        print('acos(0.5) ' acos(0.5));
+        print('atan(0.5) ' atan(0.5));
+        ``)
+    println(result.data)
+
+# Expression types
+BLOCK: 1
+CALL: 2
+IF: 3
+LITERAL: 4
+REPEAT: 5
+LOOP: 6
+OPERATION: 7
+VARIABLE: 8
+RETURN: 9
+LIST: 10
+
+type Value
+    list List(float)
+
+fun Value get(i int) float
+    return list.array[i]
+
+fun Value set(i int, x float)
+    list.array[i] = x
+
+fun Value add(x float)
+    list.add(x)
+
+fun Value len() int
+    return list.len()
+
+type Expr
+    exprType int
+    name string
+    value Value
+    list List(Expr)
+
+fun newExpr(exprType int, name i8[], value Value) Expr
+    e := Expr(str(name), value, newList(Expr))
+    e.exprType = exprType
+    return e
+
+type At
+    global HashMap(string, Value)
+    local HashMap(string, Value)
+    functions HashMap(string, Expr)
+    stack List(HashMap(string, Value))
+    out StringBuilder
+    code string
+    token string
+    value Value
+    pos int
+    returnValue Value
+    hasReturnValue int
+    counter int
+    inOperator int
+
+fun newAt() At
+    global : newHashMap(string, Value)
+    local : newHashMap(string, Value)
+    functions : newHashMap(string, Expr)
+    stack : newList(HashMap(string, Value))
+    out : StringBuilder(i8[0])
+    code : string(i8[0])
+    token : string(i8[0])
+    value : valueOf(0)
+    returnValue := valueOf(0)
+    return At(global, local, functions, stack, out, code, token, value, returnValue)
+
+##
+ fun At set(name string, value Value)
+    global.put(hashCode(name.data), name, value)
+##
+
+fun At get(map HashMap(string, Value), name string) Value?
+    return map.get(hashCode(name.data), name)
+
+fun At put(map HashMap(string, Value), name string, value Value)
+    map.put(hashCode(name.data), name, value)
+
+fun At setFunction(name string, expr Expr)
+    functions.put(hashCode(name.data), name, expr)
+
+fun At getFunction(name string) List(Expr)?
+    return functions.get(hashCode(name.data), name).list
+
+fun At hasFunction(name string) int
+    return functions.get(hashCode(name.data), name) <> null
+
+fun At run(programCode i8[]) string
+    code = str(programCode)
+    pos = 0
+    counter = 100000
+    read()
+    program : newList(Expr)
+    loop token.len() > 0
+        if match('+', 'fun')
+            n : token
+            inOperator = 1
+            setFunction(n, newExpr(BLOCK, '', valueOf(0)))
+            c := parseExpr(0)
+            c.list.add(parseExpr(0))
+            inOperator = 0
+            setFunction(n, c)
+        else
+            program.add(parseExpr(0))
+        match(',', ';')
+    out = StringBuilder(i8[16])
+    result := valueOf(0)
+    for i := until(program.size)
+        e : program.get(i)
+        if e
+            result = runExpr(e)
+    if out.data.len = 0 and result.list.size > 0
+        out.append(convertToString(result).data)
+    return str(out.data)
+
+fun At parseExpr(min int) Expr
+    prim := parsePrimary()
+    loop
+        power := -1
+        if token.data.len = 0
+            return prim
+        op := newExpr(OPERATION, token.data, valueOf(0))
+        op.list.add(prim)
+        right := 1
+        if token.charAt(0) = ord(':')
+            if op.list.array[0].exprType <> VARIABLE and op.list.array[0].name.charAt(0) <> ord('.')
+                return prim
+            power = 10
+            right = -1
+        elif token.charAt(0) = ord('.')
+            power = 60
+        elif token.charAt(0) < ord('a') or token.charAt(0) > ord('z')
+            power = int(operator(token, 1, 0, 0))
+        if power < min
+            return prim
+        read()
+        op.list.add(parseExpr(power + right))
+        prim = op
+    return prim
+
+fun At parsePrimary() Expr
+    v : value
+    if token.data.len = 0
+        return newExpr(LITERAL, '', valueOf(0))
+    elif match('@', 'while')
+        e := newExpr(LOOP, '', valueOf(0))
+        e.list.add(parseExpr(0))
+        e.list.add(parseExpr(0))
+        return e
+    elif match('*', 'repeat')
+        e := newExpr(REPEAT, '', valueOf(0))
+        e.list.add(parseExpr(0))
+        e.list.add(parseExpr(0))
+        return e
+    elif match('?', 'if')
+        e := newExpr(IF, '', valueOf(0))
+        e.list.add(parseExpr(0))
+        e.list.add(parseExpr(0))
+        if match(':', 'else')
+            e.list.add(parseExpr(0))
+        return e
+    elif match('=', 'return')
+        e := newExpr(RETURN, '', valueOf(0))
+        e.list.add(parseExpr(0))
+        return e
+    elif match('-', '-')
+        e := newExpr(OPERATION, '-', valueOf(0))
+        e.list.add(newExpr(LITERAL, '', valueOf(0)))
+        e.list.add(parsePrimary())
+        return e
+    elif match('(', '(')
+        e := newExpr(LIST, '', valueOf(0))
+        loop not match(')', ')') and pos < code.data.len
+            e.list.add(parseExpr(0))
+            match(',', ',')
+        return e
+    elif match('{', '{')
+        e := newExpr(BLOCK, '', valueOf(0))
+        loop match('}', '}') = 0 and pos < code.data.len
+            e.list.add(parseExpr(0))
+            match(';', ';')
+        return e
+    elif match('0', '\'')
+        return newExpr(LITERAL, '', v)
+    id := token
+    if match('>', 'print')
+        id = str('>')
+    else
+        read()
+    if (hasFunction(id) or id.charAt(0) = ord('>')) and match('(', '(')
+        e := newExpr(CALL, id.data, valueOf(0))
+        loop (not match(')', ')')) and pos < code.len()
+            e.list.add(parseExpr(0))
+            match(',', ',')
+        return e
+    return newExpr(VARIABLE, id.data, valueOf(0))
+
+fun At match(a i8[], b i8[]) int
+    if equals(token.data, a) or equals(token.data, b)
+        read()
+        return 1
+    return 0
+
+fun At read()
+    token = str('')
+    loop pos < code.data.len
+        c : code.charAt(pos)
+        if c = ord(' ') or c = ord('\n')
+            pos += 1
+        else
+            break
+    if pos >= code.data.len
+        return
+    start : pos
+    c := code.charAt(pos)
+    if (c >= ord('a') and c <= ord('z')) or (c >= ord('A') and c <= ord('Z')) or c = ord('_')
+        pos += 1
+        loop pos < code.data.len
+            c = code.charAt(pos)
+            if (c >= ord('a') and c <= ord('z')) or (c >= ord('A') and c <= ord('Z')) or c = ord('_') or (c >= ord('0') and c <= ord('9'))
+                pos += 1
+            else
+                break
+        token = code.substring(start, pos)
+    elif c >= ord('0') and c <= ord('9')
+        pos += 1
+        v := float(c - ord('0'))
+        div := 0.0
+        loop pos < code.data.len
+            c = code.charAt(pos)
+            if c >= ord('0') and c <= ord('9')
+                v = v * 10 + float(c - ord('0'))
+                div *= 10
+            elif c = ord('.') and div = 0
+                div = 1
+            else
+                break
+            pos += 1
+        if div > 0
+            v /= div
+        value = valueOf(v)
+        token = str('0')
+    elif c = ord('\'')
+        pos += 1
+        value = Value(newList(float))
+        loop
+            if pos >= code.len() or code.charAt(pos) = ord('\'')
+                pos += 1
+                break pos >= code.len() or code.charAt(pos) <> ord('\'')
+            value.list.add(float(code.charAt(pos)))
+            pos += 1
+        value.list.add(float(0))
+        token = str('\'')
+    else
+        first : c
+        pos += 1
+        if pos < code.data.len
+            c = code.charAt(pos)
+            if (first = ord('<') and (c = ord('<') or c = ord('=') or c = ord('>'))) or 
+                    (first = ord('*') and c = ord('*')) or 
+                    (first = ord('>') and (c = ord('=') or c = ord('>')))
+                pos += 1
+        token = code.substring(start, pos)
+
+fun valueOf(v float) Value
+    list := List(float)(float[1])
+    list.size = 1
+    list.array[0] = v
+    return Value(list)
+
+fun convertToString(array Value) string
+    if array.len() = 1
+        x : array.get(0)
+        if x = int(x)
+            return str(intToString(int(x)))
+        return str(floatToString(x))
+    buff := StringBuilder(i8[16])
+    for i := until(array.len())
+        d : array.get(i)
+        if d > 0
+            c : i8[1]
+            c[0] = int(d)
+            buff.append(c)
+    return buff.toString()
+
+fun At runExpr(expr Expr) Value
+    result := valueOf(0)
+    if expr = null
+        return result
+    if expr.exprType = LITERAL
+        result = expr.value
+    elif expr.exprType = VARIABLE
+        map := global
+        if expr.name.charAt(0) > ord('Z')
+            map = local
+        r := get(map, expr.name)
+        if r <> null
+            result = r
+        else
+            result = valueOf(0)
+    elif expr.exprType = IF
+        cond : runExpr(expr.list.get(0))
+        if int(cond.get(0)) <> 0
+            result = runExpr(expr.list.get(1))
+        elif expr.list.len() > 2
+            result = runExpr(expr.list.get(2))
+    elif expr.exprType = REPEAT
+        c : int(runExpr(expr.list.get(0)).list.get(0))
+        for i := until(c)
+            break hasReturnValue or counter <= 0
+            counter -= 1
+            put(local, str('_'), valueOf(float(i)))
+            result = runExpr(expr.list.get(1))
+    elif expr.exprType = LOOP
+        loop
+            break int(runExpr(expr.list.get(0)).get(0)) = 0 
+            break hasReturnValue or counter <= 0
+            counter -= 1
+            result = runExpr(expr.list.get(1))
+    elif expr.exprType = RETURN
+        result = runExpr(expr.list.get(0))
+        returnValue = result
+        hasReturnValue = 1
+    elif expr.exprType = CALL
+        if expr.name.charAt(0) = ord('>')
+            for i := until(expr.list.len())
+                out.append(convertToString(runExpr(expr.list.get(i))).data)
+            out.append('\n')
+        else
+            result = call(expr.name, expr.list.array)
+    elif expr.exprType = BLOCK
+        for i := until(expr.list.len())
+            result = runExpr(expr.list.get(i))
+            break hasReturnValue
+    elif expr.exprType = LIST
+        totalLen := 0
+        for i := until(expr.list.len())
+            break hasReturnValue
+            r : runExpr(expr.list.get(i))
+            totalLen += r.list.size
+        result = Value(newList(float))
+        for i := until(expr.list.len())
+            break hasReturnValue
+            r : runExpr(expr.list.get(i))
+            for j := until(r.list.len())
+                result.list.add(r.list.get(j))
+        if result.list.size = 0
+            result = valueOf(0)
+    elif expr.exprType = OPERATION
+        left : expr.list.get(0)
+        right : expr.list.get(1)
+        if not left
+            return valueOf(0)
+        if not right
+            return valueOf(0)
+        if expr.name.charAt(0) = ord(':')
+            name := str('')
+            arrayIndex Expr? := null
+            if left.exprType = VARIABLE
+                name = left.name
+            elif left.exprType = OPERATION and left.name.charAt(0) = ord('.')
+                name = left.list.get(0).name
+                arrayIndex = left.list.get(1)
+            map := global
+            if name.len() > 0 and name.charAt(0) > ord('Z')
+                map = local
+            v : runExpr(right)
+            if arrayIndex
+                o := valueOf(0)
+                n : get(map, name)
+                if n <> null
+                    o = n
+                put(map, name, o)
+                index : int(runExpr(arrayIndex).get(0))
+                if index >= 0
+                    while o.len() <= index
+                        o.add(0.0)
+                    o.set(index, v.get(0))
+            else
+                put(map, name, v)
+            return v
+        lo : runExpr(left)
+        r : runExpr(right).get(0)
+        if expr.name.charAt(0) = ord('.')
+            if r < 0 or r >= float(lo.len())
+                if r = -1
+                    return valueOf(float(lo.len()))
+                return valueOf(0)
+            return valueOf(lo.get(int(r)))
+        result = valueOf(operator(expr.name, 0, lo.get(0), r))
+    return result
+
+fun At call(name string, argList Expr[]) Value
+    m : getFunction(name)
+    if m = null
+        return valueOf(0)
+    newLocal := newHashMap(string, Value)
+    for i := until(m.size - 1)
+        if i < argList.len
+            put(newLocal, m.get(i).name, runExpr(argList[i]))
+    stack.add(local)
+    local = newLocal
+    result := runExpr(m.array[m.size - 1])
+    if hasReturnValue
+        result = returnValue
+        hasReturnValue = 0
+    if stack.size > 0
+        l : stack.array[stack.size - 1]
+        if l
+            local = l
+        stack.remove(stack.size - 1)
+    return result
+
+fun At operator(op string, precedence int, l float, r float) float
+    if hasFunction(op) and not inOperator
+        if precedence
+            return 40
+        inOperator = 1
+        list : Expr[2]
+        list[0] = newExpr(LITERAL, '', valueOf(l))
+        list[1] = newExpr(LITERAL, '', valueOf(r))
+        result : call(op, list)
+        inOperator = 0
+        return result.get(0)
+    res := 0.0
+    power := -1
+    if op.equals(str('&'))
+        res = float(int(l) & int(r))
+        power = 20
+    elif op.equals(str('|'))
+        res = float(int(l) | int(r))
+        power = 20
+    elif op.equals(str('='))
+        if l = r
+            res = 1
+        power = 30
+    elif op.equals(str('<>'))
+        if l <> r
+            res = 1
+        power = 30
+    elif op.equals(str('>'))
+        if l > r
+            res = 1
+        power = 30
+    elif op.equals(str('<'))
+        if l < r
+            res = 1
+        power = 30
+    elif op.equals(str('>='))
+        if l >= r
+            res = 1
+        power = 30
+    elif op.equals(str('<='))
+        if l <= r
+            res = 1
+        power = 30
+    elif op.equals(str('+'))
+        res = l + r
+        power = 40
+    elif op.equals(str('-'))
+        res = l - r
+        power = 40
+    elif op.equals(str('*'))
+        res = l * r
+        power = 50
+    elif op.equals(str('/'))
+        res = l / r
+        power = 50
+    elif op.equals(str('%'))
+        res = l % r
+        power = 50
+    if precedence
+        return float(power)
+    return res
+
+## Expected
+pow(2, 10) 1024.000000000000454747
+sqrt(2) 1.41421356237309536
+sin(0.5) 0.479425538604203008
+cos(0.5) 0.877582561890372352
+tan(0.5) 0.54630248984379072
+asin(0.5) 0.523726305333584256
+acos(0.5) 1.047070021461312008
+atan(0.5) 0.46371649389409824
+
