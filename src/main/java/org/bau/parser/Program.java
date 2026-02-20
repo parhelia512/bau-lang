@@ -459,6 +459,23 @@ public class Program {
                 + "    fprintf(stdout, \"Array index %lld is out of bounds for the array length %lld\\n\", x, len);\n"
                 + "    exit(1);\n"
                 + "}\n");
+        buff.append("typedef struct _ToBeFreed _ToBeFreed;\n"
+                + "struct _ToBeFreed { void* obj; void (*free)(void*); };\n"
+                + "_ToBeFreed _toBeFreedStack[1024];\n"
+                + "int _freeStackDraining = 0, _freeStack = 0;\n"
+                + "void _registerAndMaybeDrain(void* x, void (*free)(void*)) {\n"
+                + "    if (_freeStackDraining < 100) {\n"
+                + "        _freeStackDraining++; free(x); _freeStackDraining--; return; }\n"
+                + "    _toBeFreedStack[_freeStack].obj = x;\n"
+                + "    _toBeFreedStack[_freeStack].free = free;\n"
+                + "    if (_freeStack++ >= 1024) { fprintf(stdout, \"Free stack overflow\\n\"); exit(1); }    \n"
+                + "    if (_freeStackDraining == 100) {\n"
+                + "        _freeStackDraining = 200;\n"
+                + "        while(_freeStack > 0) {\n"
+                + "            _freeStack--; void* n = _toBeFreedStack[_freeStack].obj;\n"
+                + "            void (*free)(void*) = _toBeFreedStack[_freeStack].free;\n"
+                + "            free(n);\n"
+                + "        } _freeStackDraining = 100; } }\n");
         boolean hasTraits = false;
         for (DataType t : dataTypeMap.values()) {
             if (t.isUsed() && !t.traitNames.isEmpty()) {
@@ -619,7 +636,7 @@ public class Program {
         for (DataType t : dataTypeMap.values()) {
             if (t.isUsed()) {
                 if (t.isArray() || t.needFree()) {
-                    buff.append("void " + t.nameC() + "_free(" + t.nameC() + "* x) {\n");
+                    buff.append("void " + t.nameC() + "_free_0(" + t.nameC() + "* x) {\n");
                     if (t.memoryType() == MemoryType.OWNER) {
                         buff.append(Statement.indent("if (x == NULL) return;\n"));
                     }
@@ -658,6 +675,9 @@ public class Program {
                         }
                         buff.append("}\n");
                     }
+                    buff.append("void " + t.nameC() + "_free(" + t.nameC() + "* x) {\n");
+                    buff.append(Statement.indent("_registerAndMaybeDrain(x, (void(*)(void*))" + t.nameC() + "_free_0);"));
+                    buff.append("}\n");
                     if (t.isCopyType() && !t.isArray()) {
                         buff.append("void " + t.nameC() + "_copy(" + t.nameC() + "* x) {\n");
                         for (Variable f : t.fields) {

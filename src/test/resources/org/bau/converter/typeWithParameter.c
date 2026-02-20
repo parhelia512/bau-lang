@@ -232,6 +232,23 @@ int64_t arrayOutOfBounds(int64_t x, int64_t len) {
     fprintf(stdout, "Array index %lld is out of bounds for the array length %lld\n", x, len);
     exit(1);
 }
+typedef struct _ToBeFreed _ToBeFreed;
+struct _ToBeFreed { void* obj; void (*free)(void*); };
+_ToBeFreed _toBeFreedStack[1024];
+int _freeStackDraining = 0, _freeStack = 0;
+void _registerAndMaybeDrain(void* x, void (*free)(void*)) {
+    if (_freeStackDraining < 100) {
+        _freeStackDraining++; free(x); _freeStackDraining--; return; }
+    _toBeFreedStack[_freeStack].obj = x;
+    _toBeFreedStack[_freeStack].free = free;
+    if (_freeStack++ >= 1024) { fprintf(stdout, "Free stack overflow\n"); exit(1); }    
+    if (_freeStackDraining == 100) {
+        _freeStackDraining = 200;
+        while(_freeStack > 0) {
+            _freeStack--; void* n = _toBeFreedStack[_freeStack].obj;
+            void (*free)(void*) = _toBeFreedStack[_freeStack].free;
+            free(n);
+        } _freeStackDraining = 100; } }
 /* types */
 typedef struct int_array int_array;
 struct int_array;
@@ -275,14 +292,18 @@ int64_t idx_2(int64_t x, int64_t len);
 void test_0();
 void int_array_free(int_array* x);
 void List_int_free(List_int* x);
-void int_array_free(int_array* x) {
+void int_array_free_0(int_array* x) {
     _free(x->data); _traceFree(x->data);
     _free(x); _traceFree(x);
 }
-void List_int_free(List_int* x) {
+void int_array_free(int_array* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))int_array_free_0);}
+void List_int_free_0(List_int* x) {
     _decUse(x->array, int_array);
     _free(x); _traceFree(x);
 }
+void List_int_free(List_int* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))List_int_free_0);}
 List_int* List_int_1(int_array* array) {
     List_int* _t0 = List_int_new();
     _incUseStack(array);

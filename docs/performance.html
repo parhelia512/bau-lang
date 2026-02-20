@@ -69,7 +69,7 @@ results in simple code and high productivity.</p>
 <tbody>
 <tr>
 <td>Binary Trees</td>
-<td>3.3</td>
+<td>3.6</td>
 <td>3.3</td>
 <td>6.7</td>
 <td>2.0</td>
@@ -82,7 +82,7 @@ results in simple code and high productivity.</p>
 </tr>
 <tr>
 <td>Fannkuch</td>
-<td>1.5</td>
+<td>1.4</td>
 <td>1.5</td>
 <td>1.5</td>
 <td>1.8</td>
@@ -264,6 +264,7 @@ for i in {1..3}; do time ./mandelbrot 8000 &gt; out.tiff; done
 java -jar bau.jar -useTmMalloc true -O3 *.bau
 for i in {1..3}; do time ./binaryTrees 20; done
 for i in {1..3}; do time ./binaryTreesRefCount 20; done
+for i in {1..3}; do time ./linkedList; done
 
 echo &quot;== C ============&quot;
 cp ../src/test/resources/org/bau/benchmarks/c/* .
@@ -287,11 +288,13 @@ go build -ldflags=&quot;-s -w&quot; fannkuch.go
 go build -ldflags=&quot;-s -w&quot; munchausen.go
 go build -ldflags=&quot;-s -w&quot; piDigits.go
 go build -ldflags=&quot;-s -w&quot; mandelbrot.go
+go build -ldflags=&quot;-s -w&quot; linkedList.go
 for i in {1..3}; do time ./binaryTrees 20; done
 for i in {1..3}; do time ./fannkuch 11; done
 for i in {1..3}; do time ./munchausen; done
 for i in {1..3}; do time ./piDigits &gt; out.txt; done
 for i in {1..3}; do time ./mandelbrot 8000 &gt; out.tiff; done
+for i in {1..3}; do time ./linkedList; done
 
 echo &quot;== Java ============&quot;
 javac ../src/test/java/org/bau/benchmarks/*.java -d .
@@ -305,6 +308,7 @@ for i in {1..3}; do time java -Xmx100m org.bau.benchmarks.Fannkuch 11; done
 for i in {1..3}; do time java -Xmx100m org.bau.benchmarks.Munchausen; done
 for i in {1..3}; do time java -Xmx100m org.bau.benchmarks.PiDigits 10000 &gt; out.txt; done
 for i in {1..3}; do time java -Xmx100m org.bau.benchmarks.Mandelbrot 8000 &gt; out.tiff; done
+for i in {1..3}; do time java -Xmx2g org.bau.benchmarks.LinkedList; done
 
 echo &quot;== Nim ============&quot;
 echo &quot;requires: nimble install https://github.com/nim-lang/bigints&quot;
@@ -328,6 +332,7 @@ for i in {1..3}; do time pypy3.10 fannkuch.py 11; done
 for i in {1..3}; do time pypy3.10 munchausen.py; done
 for i in {1..3}; do time pypy3.10 piDigits.py 10000 &gt; out.txt; done
 for i in {1..3}; do time pypy3.10 mandelbrot.py 8000 &gt; out.tiff; done
+for i in {1..3}; do time pypy3.10 linkedList.py; done
 
 echo &quot;== Rust ============&quot;
 cp ../src/test/resources/org/bau/benchmarks/rust/*.rs .

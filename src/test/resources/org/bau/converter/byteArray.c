@@ -232,6 +232,23 @@ int64_t arrayOutOfBounds(int64_t x, int64_t len) {
     fprintf(stdout, "Array index %lld is out of bounds for the array length %lld\n", x, len);
     exit(1);
 }
+typedef struct _ToBeFreed _ToBeFreed;
+struct _ToBeFreed { void* obj; void (*free)(void*); };
+_ToBeFreed _toBeFreedStack[1024];
+int _freeStackDraining = 0, _freeStack = 0;
+void _registerAndMaybeDrain(void* x, void (*free)(void*)) {
+    if (_freeStackDraining < 100) {
+        _freeStackDraining++; free(x); _freeStackDraining--; return; }
+    _toBeFreedStack[_freeStack].obj = x;
+    _toBeFreedStack[_freeStack].free = free;
+    if (_freeStack++ >= 1024) { fprintf(stdout, "Free stack overflow\n"); exit(1); }    
+    if (_freeStackDraining == 100) {
+        _freeStackDraining = 200;
+        while(_freeStack > 0) {
+            _freeStack--; void* n = _toBeFreedStack[_freeStack].obj;
+            void (*free)(void*) = _toBeFreedStack[_freeStack].free;
+            free(n);
+        } _freeStackDraining = 100; } }
 /* types */
 typedef struct i8_array i8_array;
 struct i8_array;
@@ -261,10 +278,12 @@ int32_t readI32Le_2(i8_array* d, int32_t pos);
 int64_t shiftLeft_2(int64_t a, int64_t b);
 void test_0();
 void i8_array_free(i8_array* x);
-void i8_array_free(i8_array* x) {
+void i8_array_free_0(i8_array* x) {
     _free(x->data); _traceFree(x->data);
     _free(x); _traceFree(x);
 }
+void i8_array_free(i8_array* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))i8_array_free_0);}
 int64_t idx_2(int64_t x, int64_t len) {
     if (x >= 0 && x < len) return x;
     return arrayOutOfBounds(x, len);

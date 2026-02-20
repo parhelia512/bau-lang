@@ -1,0 +1,40 @@
+# https://lemire.me/blog/2026/02/15/how-bad-can-python-stop-the-world-pauses-get/
+
+import org.bau.DateTime
+    getNanoTime
+
+# Define a Node type
+type Node
+    value int
+    next  Node?
+
+fun newNode(value int) Node
+    n : Node(null)
+    n.value = value
+    return n
+
+fun createLinkedList(limit int) Node
+    head := newNode(0)
+    current := head
+    for i := range(1, limit)
+        newNode := newNode(i)
+        current.next = newNode
+        current = newNode
+    return head
+
+fun main()
+    println('Starting loading linked list...')
+    x := createLinkedList(50_000_000)
+    println('Initial batch completed, starting stress test...')
+    start := getNanoTime()
+    worstCase := 0
+    for i := range(0, 1_000_000)
+        batchStart := getNanoTime()
+        # Compute elapsed seconds
+        elapsed := (batchStart - start)
+        if elapsed > worstCase
+            worstCase = elapsed
+        start = batchStart
+        _ := createLinkedList(1000)
+    println('Max delay between batch start and overall start: '
+            worstCase ' nanos')

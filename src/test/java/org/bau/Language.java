@@ -7,6 +7,92 @@ https://github.com/NicoNex/tau
 
 raw string that are shifted too much to the left
 
+http://members.chello.at/easyfilter/bresenham.html
+graphics library
+code coverage tool
+assertions on the right?
+language server
+improved stdlib and add to readme
+
+//-----------------
+Node* Node_toBeFreed = 0;
+int Node_draining = 0;
+void Node_drain() {
+    Node_draining = 1;
+    while (Node_toBeFreed != 0) {
+        Node* x = Node_toBeFreed;
+        Node_toBeFreed = 0;
+        _decUse(x->next, Node);
+        _free(x); _traceFree(x);
+    }
+    Node_draining = 0;
+}
+void Node_free(Node* x) {
+    Node_toBeFreed = x;
+    // _free(x); _traceFree(x);
+    if (!Node_draining) {
+        Node_drain();
+    }
+}
+//
+void Node_free(Node* x) {
+    _decUse(x->next, Node);
+    _free(x); _traceFree(x);
+}
+//-----------------
+typedef struct _ToBeFreed _ToBeFreed;
+struct _ToBeFreed {
+    void* obj;
+    void (*free)(void*);
+};
+_ToBeFreed _toBeFreedStack[1024];
+int _freeStack = 0;
+void _registerAndMaybeDrain(void* x, void (*free)(void*)) {
+    _toBeFreedStack[_freeStack].obj = x;
+    _toBeFreedStack[_freeStack].free = free;
+    _freeStack++;
+    if (_freeStack == 1) {
+        while(_freeStack > 0) {
+            _freeStack--;
+            void* n = _toBeFreedStack[_freeStack].obj;
+            (*free)(void*) = _toBeFreedStack[_freeStack].free;
+            free(n);
+        }
+    }
+}
+void Node_free(Node* x) {
+    _registerAndMaybeDrain(x, Node_free_0);
+}
+void Node_free_0(Node* x) {
+    _decUse(x->next, Node);
+    _free(x); _traceFree(x);
+}
+
+
+
+
+// --------------------------
+void Node_free(Node* x) {
+    x->nextToFree = Node_toBeFreed;
+    Node_toBeFreed = x;
+    if (!Node_draining) {
+        Node_drain();
+    }
+}
+void Node_drain() {
+    Node_draining = 1;
+    while (Node_toBeFreed != 0) {
+        Node* x = Node_toBeFreed;
+        Node_toBeFreed = x->nextToFree;
+        _decUse(x->next, Node);
+        _free(x);
+        _traceFree(x);
+    }
+    Node_draining = 0;
+}
+// --------------------------
+
+
 yn: input('Is the number larger than ' x ' ?')
 
 tiny vector font renderer
@@ -690,19 +776,6 @@ no observable side-effect is permitted.
 recursion depth (the standard suggests a minimum of 512)
 
 main function with array of strings
-
-chess program
-♖ ♘ ♗ ♔ ♕ ♗ ♘ ♖ 8
-♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙ 7
-. . . . . . . . 6
-. . . . . . . . 5
-. . . . . . . . 4
-. . . . . . . . 3
-♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟ 2
-♜ ♞ ♝ ♚ ♛ ♝ ♞ ♜ 1
-A B C D E F G H
-
-tetris program
 
 String data type
 

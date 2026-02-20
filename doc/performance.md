@@ -25,8 +25,8 @@ which results in simple code and high productivity.
 
 | Benchmark              |  Bau |   C  |  Go  | Java |  Nim | PyPy | Rust | Swift| Vlang|  Zig |
 |------------------------|------|------|------|------|------|------|------|------|------|------|
-| Binary Trees           |  3.3 |  3.3 |  6.7 |  2.0 |  4.0 |  5.5 |  4.1 | 10.8 |  4.5 |  4.5 |
-| Fannkuch               |  1.5 |  1.5 |  1.5 |  1.8 |  1.5 |  3.7 |  1.4 |  1.7 |  1.5 |  1.6 |
+| Binary Trees           |  3.6 |  3.3 |  6.7 |  2.0 |  4.0 |  5.5 |  4.1 | 10.8 |  4.5 |  4.5 |
+| Fannkuch               |  1.4 |  1.5 |  1.5 |  1.8 |  1.5 |  3.7 |  1.4 |  1.7 |  1.5 |  1.6 |
 | SpeedTest              |  1.2 |  1.2 |  1.9 |  2.7 |  1.6 | 10.2 |  1.2 |  1.4 |  1.3 |  1.2 |
 | Pi Digits              |  1.3 |  0.4 |  0.6 |  1.9 | 24.0 |  1.4 |  1.0 |  5.0 |  3.2 |  3.1 |
 | Mandelbrot             |  1.8 |  1.8 |  1.8 |  2.1 |  1.9 |  9.8 |  2.0 |  9.8 |  1.8 |  9.4 |
@@ -175,6 +175,7 @@ Compiling and Running the C, Java, and Bau versions:
     java -jar bau.jar -useTmMalloc true -O3 *.bau
     for i in {1..3}; do time ./binaryTrees 20; done
     for i in {1..3}; do time ./binaryTreesRefCount 20; done
+    for i in {1..3}; do time ./linkedList; done
 
     echo "== C ============"
     cp ../src/test/resources/org/bau/benchmarks/c/* .
@@ -198,11 +199,13 @@ Compiling and Running the C, Java, and Bau versions:
     go build -ldflags="-s -w" munchausen.go
     go build -ldflags="-s -w" piDigits.go
     go build -ldflags="-s -w" mandelbrot.go
+    go build -ldflags="-s -w" linkedList.go
     for i in {1..3}; do time ./binaryTrees 20; done
     for i in {1..3}; do time ./fannkuch 11; done
     for i in {1..3}; do time ./munchausen; done
     for i in {1..3}; do time ./piDigits > out.txt; done
     for i in {1..3}; do time ./mandelbrot 8000 > out.tiff; done
+    for i in {1..3}; do time ./linkedList; done
 
     echo "== Java ============"
     javac ../src/test/java/org/bau/benchmarks/*.java -d .
@@ -216,6 +219,7 @@ Compiling and Running the C, Java, and Bau versions:
     for i in {1..3}; do time java -Xmx100m org.bau.benchmarks.Munchausen; done
     for i in {1..3}; do time java -Xmx100m org.bau.benchmarks.PiDigits 10000 > out.txt; done
     for i in {1..3}; do time java -Xmx100m org.bau.benchmarks.Mandelbrot 8000 > out.tiff; done
+    for i in {1..3}; do time java -Xmx2g org.bau.benchmarks.LinkedList; done
     
     echo "== Nim ============"
     echo "requires: nimble install https://github.com/nim-lang/bigints"
@@ -239,6 +243,7 @@ Compiling and Running the C, Java, and Bau versions:
     for i in {1..3}; do time pypy3.10 munchausen.py; done
     for i in {1..3}; do time pypy3.10 piDigits.py 10000 > out.txt; done
     for i in {1..3}; do time pypy3.10 mandelbrot.py 8000 > out.tiff; done
+    for i in {1..3}; do time pypy3.10 linkedList.py; done
     
     echo "== Rust ============"
     cp ../src/test/resources/org/bau/benchmarks/rust/*.rs .

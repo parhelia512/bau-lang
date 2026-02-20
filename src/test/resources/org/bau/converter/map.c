@@ -232,6 +232,23 @@ int64_t arrayOutOfBounds(int64_t x, int64_t len) {
     fprintf(stdout, "Array index %lld is out of bounds for the array length %lld\n", x, len);
     exit(1);
 }
+typedef struct _ToBeFreed _ToBeFreed;
+struct _ToBeFreed { void* obj; void (*free)(void*); };
+_ToBeFreed _toBeFreedStack[1024];
+int _freeStackDraining = 0, _freeStack = 0;
+void _registerAndMaybeDrain(void* x, void (*free)(void*)) {
+    if (_freeStackDraining < 100) {
+        _freeStackDraining++; free(x); _freeStackDraining--; return; }
+    _toBeFreedStack[_freeStack].obj = x;
+    _toBeFreedStack[_freeStack].free = free;
+    if (_freeStack++ >= 1024) { fprintf(stdout, "Free stack overflow\n"); exit(1); }    
+    if (_freeStackDraining == 100) {
+        _freeStackDraining = 200;
+        while(_freeStack > 0) {
+            _freeStack--; void* n = _toBeFreedStack[_freeStack].obj;
+            void (*free)(void*) = _toBeFreedStack[_freeStack].free;
+            free(n);
+        } _freeStackDraining = 100; } }
 /* types */
 typedef struct i8_array i8_array;
 struct i8_array;
@@ -359,37 +376,49 @@ void str_copy(str* x);
 void str_array_free(str_array* x);
 void HashMap_int_int_free(HashMap_int_int* x);
 void HashMap_str_str_free(HashMap_str_str* x);
+void i8_array_free_0(i8_array* x) {
+    _free(x->data); _traceFree(x->data);
+    _free(x); _traceFree(x);
+}
 void i8_array_free(i8_array* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))i8_array_free_0);}
+void int_array_free_0(int_array* x) {
     _free(x->data); _traceFree(x->data);
     _free(x); _traceFree(x);
 }
 void int_array_free(int_array* x) {
-    _free(x->data); _traceFree(x->data);
-    _free(x); _traceFree(x);
-}
-void str_free(str* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))int_array_free_0);}
+void str_free_0(str* x) {
     _decUse(x->value, i8_array);
 }
+void str_free(str* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))str_free_0);}
 void str_copy(str* x) {
     _incUse(x->value);
 }
-void str_array_free(str_array* x) {
+void str_array_free_0(str_array* x) {
     for (int i = 0; i < _arrayLen(x); i++) str_free(&(x->data[i]));
     _free(x->data); _traceFree(x->data);
     _free(x); _traceFree(x);
 }
-void HashMap_int_int_free(HashMap_int_int* x) {
+void str_array_free(str_array* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))str_array_free_0);}
+void HashMap_int_int_free_0(HashMap_int_int* x) {
     _decUse(x->keys, int_array);
     _decUse(x->values, int_array);
     _decUse(x->hashes, int_array);
     _free(x); _traceFree(x);
 }
-void HashMap_str_str_free(HashMap_str_str* x) {
+void HashMap_int_int_free(HashMap_int_int* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))HashMap_int_int_free_0);}
+void HashMap_str_str_free_0(HashMap_str_str* x) {
     _decUse(x->keys, str_array);
     _decUse(x->values, str_array);
     _decUse(x->hashes, int_array);
     _free(x); _traceFree(x);
 }
+void HashMap_str_str_free(HashMap_str_str* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))HashMap_str_str_free_0);}
 i8_array* str_const(char* data, uint32_t len) {
     i8_array* result = _malloc(sizeof(i8_array));
     result->len = len;

@@ -232,6 +232,23 @@ int64_t arrayOutOfBounds(int64_t x, int64_t len) {
     fprintf(stdout, "Array index %lld is out of bounds for the array length %lld\n", x, len);
     exit(1);
 }
+typedef struct _ToBeFreed _ToBeFreed;
+struct _ToBeFreed { void* obj; void (*free)(void*); };
+_ToBeFreed _toBeFreedStack[1024];
+int _freeStackDraining = 0, _freeStack = 0;
+void _registerAndMaybeDrain(void* x, void (*free)(void*)) {
+    if (_freeStackDraining < 100) {
+        _freeStackDraining++; free(x); _freeStackDraining--; return; }
+    _toBeFreedStack[_freeStack].obj = x;
+    _toBeFreedStack[_freeStack].free = free;
+    if (_freeStack++ >= 1024) { fprintf(stdout, "Free stack overflow\n"); exit(1); }    
+    if (_freeStackDraining == 100) {
+        _freeStackDraining = 200;
+        while(_freeStack > 0) {
+            _freeStack--; void* n = _toBeFreedStack[_freeStack].obj;
+            void (*free)(void*) = _toBeFreedStack[_freeStack].free;
+            free(n);
+        } _freeStackDraining = 100; } }
 /* traits */
 typedef struct _typeMetaData _typeMetaData;
 typedef void (*_func)(void);
@@ -334,24 +351,34 @@ void int_array_free(int_array* x);
 void Reader_free(Reader* x);
 void Writer_free(Writer* x);
 void Memory_free(Memory* x);
+void i8_array_free_0(i8_array* x) {
+    _free(x->data); _traceFree(x->data);
+    _free(x); _traceFree(x);
+}
 void i8_array_free(i8_array* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))i8_array_free_0);}
+void int_array_free_0(int_array* x) {
     _free(x->data); _traceFree(x->data);
     _free(x); _traceFree(x);
 }
 void int_array_free(int_array* x) {
-    _free(x->data); _traceFree(x->data);
+    _registerAndMaybeDrain(x, (void(*)(void*))int_array_free_0);}
+void Reader_free_0(Reader* x) {
     _free(x); _traceFree(x);
 }
 void Reader_free(Reader* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))Reader_free_0);}
+void Writer_free_0(Writer* x) {
     _free(x); _traceFree(x);
 }
 void Writer_free(Writer* x) {
-    _free(x); _traceFree(x);
-}
-void Memory_free(Memory* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))Writer_free_0);}
+void Memory_free_0(Memory* x) {
     _decUse(x->array, int_array);
     _free(x); _traceFree(x);
 }
+void Memory_free(Memory* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))Memory_free_0);}
 i8_array* str_const(char* data, uint32_t len) {
     i8_array* result = _malloc(sizeof(i8_array));
     result->len = len;

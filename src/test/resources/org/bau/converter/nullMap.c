@@ -232,6 +232,23 @@ int64_t arrayOutOfBounds(int64_t x, int64_t len) {
     fprintf(stdout, "Array index %lld is out of bounds for the array length %lld\n", x, len);
     exit(1);
 }
+typedef struct _ToBeFreed _ToBeFreed;
+struct _ToBeFreed { void* obj; void (*free)(void*); };
+_ToBeFreed _toBeFreedStack[1024];
+int _freeStackDraining = 0, _freeStack = 0;
+void _registerAndMaybeDrain(void* x, void (*free)(void*)) {
+    if (_freeStackDraining < 100) {
+        _freeStackDraining++; free(x); _freeStackDraining--; return; }
+    _toBeFreedStack[_freeStack].obj = x;
+    _toBeFreedStack[_freeStack].free = free;
+    if (_freeStack++ >= 1024) { fprintf(stdout, "Free stack overflow\n"); exit(1); }    
+    if (_freeStackDraining == 100) {
+        _freeStackDraining = 200;
+        while(_freeStack > 0) {
+            _freeStack--; void* n = _toBeFreedStack[_freeStack].obj;
+            void (*free)(void*) = _toBeFreedStack[_freeStack].free;
+            free(n);
+        } _freeStackDraining = 100; } }
 /* types */
 typedef struct Value Value;
 struct Value;
@@ -254,9 +271,11 @@ Value* Value_0();
 Value* get_1(int64_t key);
 void test_0();
 void Value_free(Value* x);
-void Value_free(Value* x) {
+void Value_free_0(Value* x) {
     _free(x); _traceFree(x);
 }
+void Value_free(Value* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))Value_free_0);}
 Value* Value_0() {
     Value* _t0 = Value_new();
     _t0->data = 0;

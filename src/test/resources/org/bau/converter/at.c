@@ -235,6 +235,23 @@ int64_t arrayOutOfBounds(int64_t x, int64_t len) {
     fprintf(stdout, "Array index %lld is out of bounds for the array length %lld\n", x, len);
     exit(1);
 }
+typedef struct _ToBeFreed _ToBeFreed;
+struct _ToBeFreed { void* obj; void (*free)(void*); };
+_ToBeFreed _toBeFreedStack[1024];
+int _freeStackDraining = 0, _freeStack = 0;
+void _registerAndMaybeDrain(void* x, void (*free)(void*)) {
+    if (_freeStackDraining < 100) {
+        _freeStackDraining++; free(x); _freeStackDraining--; return; }
+    _toBeFreedStack[_freeStack].obj = x;
+    _toBeFreedStack[_freeStack].free = free;
+    if (_freeStack++ >= 1024) { fprintf(stdout, "Free stack overflow\n"); exit(1); }    
+    if (_freeStackDraining == 100) {
+        _freeStackDraining = 200;
+        while(_freeStack > 0) {
+            _freeStack--; void* n = _toBeFreedStack[_freeStack].obj;
+            void (*free)(void*) = _toBeFreedStack[_freeStack].free;
+            free(n);
+        } _freeStackDraining = 100; } }
 /* types */
 typedef struct i8_array i8_array;
 struct i8_array;
@@ -600,62 +617,86 @@ void org_bau_HashMap_HashMap_org_bau_String_string_Value_free(org_bau_HashMap_Ha
 void org_bau_HashMap_HashMap_org_bau_String_string_Value_array_free(org_bau_HashMap_HashMap_org_bau_String_string_Value_array* x);
 void org_bau_HashMap_HashMap_org_bau_String_string_Expr_free(org_bau_HashMap_HashMap_org_bau_String_string_Expr* x);
 void org_bau_List_List_org_bau_HashMap_HashMap_org_bau_String_string_Value_free(org_bau_List_List_org_bau_HashMap_HashMap_org_bau_String_string_Value* x);
+void i8_array_free_0(i8_array* x) {
+    _free(x->data); _traceFree(x->data);
+    _free(x); _traceFree(x);
+}
 void i8_array_free(i8_array* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))i8_array_free_0);}
+void int_array_free_0(int_array* x) {
     _free(x->data); _traceFree(x->data);
     _free(x); _traceFree(x);
 }
 void int_array_free(int_array* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))int_array_free_0);}
+void float_array_free_0(float_array* x) {
     _free(x->data); _traceFree(x->data);
     _free(x); _traceFree(x);
 }
 void float_array_free(float_array* x) {
-    _free(x->data); _traceFree(x->data);
-    _free(x); _traceFree(x);
-}
-void org_bau_String_string_free(org_bau_String_string* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))float_array_free_0);}
+void org_bau_String_string_free_0(org_bau_String_string* x) {
     _decUse(x->data, i8_array);
 }
+void org_bau_String_string_free(org_bau_String_string* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))org_bau_String_string_free_0);}
 void org_bau_String_string_copy(org_bau_String_string* x) {
     _incUse(x->data);
 }
-void org_bau_String_string_array_free(org_bau_String_string_array* x) {
+void org_bau_String_string_array_free_0(org_bau_String_string_array* x) {
     for (int i = 0; i < _arrayLen(x); i++) org_bau_String_string_free(&(x->data[i]));
     _free(x->data); _traceFree(x->data);
     _free(x); _traceFree(x);
 }
-void org_bau_String_StringBuilder_free(org_bau_String_StringBuilder* x) {
+void org_bau_String_string_array_free(org_bau_String_string_array* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))org_bau_String_string_array_free_0);}
+void org_bau_String_StringBuilder_free_0(org_bau_String_StringBuilder* x) {
     _decUse(x->data, i8_array);
     _free(x); _traceFree(x);
 }
-void Value_free(Value* x) {
+void org_bau_String_StringBuilder_free(org_bau_String_StringBuilder* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))org_bau_String_StringBuilder_free_0);}
+void Value_free_0(Value* x) {
     _decUse(x->list, org_bau_List_List_float);
     _free(x); _traceFree(x);
 }
-void Value_array_free(Value_array* x) {
+void Value_free(Value* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))Value_free_0);}
+void Value_array_free_0(Value_array* x) {
     for (int i = 0; i < _arrayLen(x); i++) _decUse(x->data[i], Value);
     _free(x->data); _traceFree(x->data);
     _free(x); _traceFree(x);
 }
-void org_bau_List_List_float_free(org_bau_List_List_float* x) {
+void Value_array_free(Value_array* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))Value_array_free_0);}
+void org_bau_List_List_float_free_0(org_bau_List_List_float* x) {
     _decUse(x->array, float_array);
     _free(x); _traceFree(x);
 }
-void Expr_free(Expr* x) {
+void org_bau_List_List_float_free(org_bau_List_List_float* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))org_bau_List_List_float_free_0);}
+void Expr_free_0(Expr* x) {
     org_bau_String_string_free(&x->name);
     _decUse(x->value, Value);
     _decUse(x->list, org_bau_List_List_Expr);
     _free(x); _traceFree(x);
 }
-void Expr_array_free(Expr_array* x) {
+void Expr_free(Expr* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))Expr_free_0);}
+void Expr_array_free_0(Expr_array* x) {
     for (int i = 0; i < _arrayLen(x); i++) _decUse(x->data[i], Expr);
     _free(x->data); _traceFree(x->data);
     _free(x); _traceFree(x);
 }
-void org_bau_List_List_Expr_free(org_bau_List_List_Expr* x) {
+void Expr_array_free(Expr_array* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))Expr_array_free_0);}
+void org_bau_List_List_Expr_free_0(org_bau_List_List_Expr* x) {
     _decUse(x->array, Expr_array);
     _free(x); _traceFree(x);
 }
-void At_free(At* x) {
+void org_bau_List_List_Expr_free(org_bau_List_List_Expr* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))org_bau_List_List_Expr_free_0);}
+void At_free_0(At* x) {
     _decUse(x->global, org_bau_HashMap_HashMap_org_bau_String_string_Value);
     _decUse(x->local, org_bau_HashMap_HashMap_org_bau_String_string_Value);
     _decUse(x->functions, org_bau_HashMap_HashMap_org_bau_String_string_Expr);
@@ -667,27 +708,37 @@ void At_free(At* x) {
     _decUse(x->returnValue, Value);
     _free(x); _traceFree(x);
 }
-void org_bau_HashMap_HashMap_org_bau_String_string_Value_free(org_bau_HashMap_HashMap_org_bau_String_string_Value* x) {
+void At_free(At* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))At_free_0);}
+void org_bau_HashMap_HashMap_org_bau_String_string_Value_free_0(org_bau_HashMap_HashMap_org_bau_String_string_Value* x) {
     _decUse(x->keys, org_bau_String_string_array);
     _decUse(x->values, Value_array);
     _decUse(x->hashes, int_array);
     _free(x); _traceFree(x);
 }
-void org_bau_HashMap_HashMap_org_bau_String_string_Value_array_free(org_bau_HashMap_HashMap_org_bau_String_string_Value_array* x) {
+void org_bau_HashMap_HashMap_org_bau_String_string_Value_free(org_bau_HashMap_HashMap_org_bau_String_string_Value* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))org_bau_HashMap_HashMap_org_bau_String_string_Value_free_0);}
+void org_bau_HashMap_HashMap_org_bau_String_string_Value_array_free_0(org_bau_HashMap_HashMap_org_bau_String_string_Value_array* x) {
     for (int i = 0; i < _arrayLen(x); i++) _decUse(x->data[i], org_bau_HashMap_HashMap_org_bau_String_string_Value);
     _free(x->data); _traceFree(x->data);
     _free(x); _traceFree(x);
 }
-void org_bau_HashMap_HashMap_org_bau_String_string_Expr_free(org_bau_HashMap_HashMap_org_bau_String_string_Expr* x) {
+void org_bau_HashMap_HashMap_org_bau_String_string_Value_array_free(org_bau_HashMap_HashMap_org_bau_String_string_Value_array* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))org_bau_HashMap_HashMap_org_bau_String_string_Value_array_free_0);}
+void org_bau_HashMap_HashMap_org_bau_String_string_Expr_free_0(org_bau_HashMap_HashMap_org_bau_String_string_Expr* x) {
     _decUse(x->keys, org_bau_String_string_array);
     _decUse(x->values, Expr_array);
     _decUse(x->hashes, int_array);
     _free(x); _traceFree(x);
 }
-void org_bau_List_List_org_bau_HashMap_HashMap_org_bau_String_string_Value_free(org_bau_List_List_org_bau_HashMap_HashMap_org_bau_String_string_Value* x) {
+void org_bau_HashMap_HashMap_org_bau_String_string_Expr_free(org_bau_HashMap_HashMap_org_bau_String_string_Expr* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))org_bau_HashMap_HashMap_org_bau_String_string_Expr_free_0);}
+void org_bau_List_List_org_bau_HashMap_HashMap_org_bau_String_string_Value_free_0(org_bau_List_List_org_bau_HashMap_HashMap_org_bau_String_string_Value* x) {
     _decUse(x->array, org_bau_HashMap_HashMap_org_bau_String_string_Value_array);
     _free(x); _traceFree(x);
 }
+void org_bau_List_List_org_bau_HashMap_HashMap_org_bau_String_string_Value_free(org_bau_List_List_org_bau_HashMap_HashMap_org_bau_String_string_Value* x) {
+    _registerAndMaybeDrain(x, (void(*)(void*))org_bau_List_List_org_bau_HashMap_HashMap_org_bau_String_string_Value_free_0);}
 i8_array* str_const(char* data, uint32_t len) {
     i8_array* result = _malloc(sizeof(i8_array));
     result->len = len;
