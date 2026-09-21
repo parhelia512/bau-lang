@@ -31,7 +31,7 @@ fun get(r Reader) int
 fun put(w Writer, x int)
     println('writing')
     w.write(x)
-    
+
 fun main()
     println('start')
     mem : Memory()

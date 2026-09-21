@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.bau.parser.expr.Expression;
 import org.bau.parser.expr.Variable;
+import org.bau.parser.stmt.Comment;
 import org.bau.parser.stmt.Free;
 import org.bau.parser.stmt.Statement;
 
@@ -39,13 +40,13 @@ public class FunctionDefinition implements Section {
     public String template;
     public String header;
     public String code;
-    public String comment;
     final int posOffset;
 
     public boolean isConstructor;
     public boolean isFunctionPointer;
     int traitFunctionId;
     private String comments;
+    public boolean topLevel;
 
     public FunctionDefinition(FullName fullName, int posOffset) {
         this.fullName = fullName;
@@ -311,15 +312,17 @@ public class FunctionDefinition implements Section {
         this.autoClose = autoClose;
     }
 
+    public String getCommentText() {
+        return comments;
+    }
+
     public String toHeaderString() {
         if (header != null) {
             return header;
         }
         StringBuilder buff = new StringBuilder();
-        if (comment != null) {
-            buff.append("##\n");
-            buff.append(comment);
-            buff.append("\n##\n");
+        if (comments != null) {
+            buff.append(Comment.formatSource(comments));
         }
         buff.append("fun ");
         if (macro) {
@@ -369,11 +372,19 @@ public class FunctionDefinition implements Section {
 
     public String formatSource() {
         StringBuilder buff = new StringBuilder();
-        buff.append(toHeaderString().trim()).append("\n");
-        for (Statement s : list) {
-            buff.append(Statement.indent(s.format()));
+        if (!topLevel) {
+            buff.append(toHeaderString().trim()).append("\n");
+        } else {
+            // global variables and statements
         }
-        return buff.toString();
+        for (Statement s : list) {
+            if (!topLevel) {
+                buff.append(Statement.indent(s.format()));
+            } else {
+                buff.append(s.format());
+            }
+        }
+        return buff.toString().trim() + "\n";
     }
 
     public String format() {
@@ -526,6 +537,9 @@ public class FunctionDefinition implements Section {
     }
 
     public void addComment(String comment) {
+        if (comment == null || comment.isEmpty()) {
+            return;
+        }
         if (comments != null) {
             comment = comments + "\n" + comment;
         }

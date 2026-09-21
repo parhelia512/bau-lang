@@ -10,7 +10,6 @@ y : string[3]
 y[0] = str('hello')
 y[1] = str('world')
 y[2] = str('!')
-
 println(y[0].data ' ' y[1].data ' ' y[2].data)
 
 ## Expected

@@ -51,13 +51,12 @@ public class BauLanguageServer {
 
     private void run(String[] args) throws IOException {
         OutputStream logOut;
-        for (int i = 0;; i++) {
-            String f = i == 0 ? logFile : logFile + i + ".txt";
-            if (!new File(f).exists()) {
-                logOut = new FileOutputStream(f);
-                break;
-            }
+        File f = new File(logFile);
+        if (f.exists() && f.length() > 1 * 1024 * 1024) {
+            new File(logFile + ".bak").delete();
+            f.renameTo(new File(logFile + ".bak"));
         }
+        logOut = new FileOutputStream(f, true);
         try {
             run(logOut);
         } finally {

@@ -10,10 +10,10 @@ public class TestStringLiterals {
 
     @Test
     public void escape() {
-        assertEquals("println('\\n\\t\\'\\\\\\xc3\\xb6')\n"
+        assertEquals("println('\\r\\n\\t\\'\\\\\\xc3\\xb6')\n"
                 + "",
                 new Parser("""
-                        println('\\n\\t\\'\\\\\\xC3\\xb6')
+                        println('\\r\\n\\t\\'\\\\\\xC3\\xb6')
                         """).parse().format());
     }
 
@@ -33,14 +33,15 @@ public class TestStringLiterals {
 
     @Test
     public void multiLineRawString() {
-        assertEquals("println('for i := range(1, 10)\\n  println(i)\\nprintln(``backtick ` ``)')\n"
-                + "",
+        assertEquals("""
+                println('for i := range(1, 10)\\n    println(i)\\nprintln(``backtick ` ``)')
+                """,
                 new Parser("""
                         println(```
-                          for i := range(1, 10)
-                            println(i)
-                          println(``backtick ` ``)
-                          ```)
+                            for i := range(1, 10)
+                                println(i)
+                            println(``backtick ` ``)
+                            ```)
                         """).parse().format());
     }
 

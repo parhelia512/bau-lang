@@ -31,11 +31,53 @@ public interface Statement {
             return s;
         }
         boolean nl = s.endsWith("\n");
-        s = s.trim().replace("\n", "\n    ");
+        String[] lines = s.split("\n");
+        StringBuilder buff = new StringBuilder();
+        boolean blockComment = false;
+        for (int i = 0; i < lines.length; i++) {
+            if (i > 0) {
+                buff.append("\n");
+            }
+            String l = lines[i];
+
+            int todoMatchingBlockComments;
+            // we have to match the number of opening # with the number of closing #
+
+            if (blockComment) {
+                // comments retain the indentation
+                buff.append(l);
+                if (l.trim().endsWith("##")) {
+                    blockComment = false;
+                }
+            } else if (l.trim().startsWith("##")) {
+                // block comment retain indentation until end of block comment
+                buff.append(l);
+                if (l.trim().equals("##") || !l.trim().endsWith("##")) {
+                    blockComment = true;
+                }
+            } else if (l.trim().startsWith("#")) {
+                // comments retain the indentation
+                buff.append(l);
+            } else if (l.isEmpty()) {
+                // empty line
+            } else {
+                // regular line
+                buff.append("    ");
+                buff.append(l);
+            }
+        }
+        if (nl) {
+            buff.append("\n");
+        }
+        int todo;
+        return buff.toString();
+        /*
+        s = s.replace("\n", "\n    ");
         if (nl) {
             s += "\n";
         }
         return "    " + s;
+        */
     }
 
     Statement replace(Variable old, Expression with);

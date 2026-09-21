@@ -1,6 +1,6 @@
 fun fibonacciRecursive(n int) int
     ticks += 1
-    if n < 2 
+    if n < 2
         return n
     return fibonacciRecursive(n - 1) + fibonacciRecursive(n - 2)
 
@@ -26,14 +26,12 @@ fun fibonacciConst(n int) const int
     return r
 
 ticks := 0
-
 ticks = 0
 println('fibonacci(20) recursive: ' fibonacciRecursive(20) ', ticks: ' ticks)
 ticks = 0
 println('fibonacci(20) iterative: ' fibonacciIterative(20) ', ticks: ' ticks)
 ticks = 0
-println('fibonacci(20) const:     ' fibonacciConst(20)     ', ticks: ' ticks)
-
+println('fibonacci(20) const:     ' fibonacciConst(20) ', ticks: ' ticks)
 
 ## Expected
 fibonacci(20) recursive: 6765, ticks: 21891

@@ -31,9 +31,9 @@ fun main()
         outPos = 4
         compress()
     else
-        if input[0] <> ord('s') or 
-               input[1] <> ord('R') or 
-               input[2] <> 2
+        if input[0] <> ord('s') or
+            input[1] <> ord('R') or
+            input[2] <> 2
             println('Not an SR3 file')
             return
         di1 = input[3]
@@ -132,8 +132,10 @@ fun readBit(cxt int) int
     return bit
 
 fun compress()
-    c1 := 0 # previous byte
-    t4 : int[0x1000000] # context -> last 3 bytes + count
+    # previous byte
+    c1 := 0
+    # context -> last 3 bytes + count
+    t4 : int[0x1000000]
     loop 1
         r := t4[h]
         cxt int
@@ -180,8 +182,10 @@ fun compress()
 
 fun decompress()
     initRead()
-    c1 := 0 # previous byte
-    t4 : int[0x1000000]; # context -> last 3 bytes + count
+    # previous byte
+    c1 := 0
+    # context -> last 3 bytes + count
+    t4 : int[0x1000000]
     loop
         r := t4[h]
         cxt int
@@ -203,8 +207,8 @@ fun decompress()
             else
                 # literal
                 c1 = readByte(cxt + 2)
-                if c1 == (r & 0xff)
-                    break; # EOF
+                # EOF
+                break c1 == (r & 0xff)
                 t4[h] = ((r << 8) & 0xffff00) | c1
         else
             # match first

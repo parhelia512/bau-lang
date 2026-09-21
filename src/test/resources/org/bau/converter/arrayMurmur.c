@@ -425,26 +425,26 @@ int main(int _argc, char *_argv[]) {
     return 0;
 }
 void _main() {
-    int32_t _t0 = murmur3_32_1(string_1000);
-    i8_array* _t1 = hex_2(_t0, 8);
-    printf("%.*s\n", _arrayLen(_t1), _t1->data);
-    int32_t _t2 = murmur3_32_1(string_1010);
-    i8_array* _t3 = hex_2(_t2, 8);
-    printf("%.*s\n", _arrayLen(_t3), _t3->data);
-    int32_t _t4 = murmur3_32_1(string_1011);
-    i8_array* _t5 = hex_2(_t4, 8);
-    printf("%.*s\n", _arrayLen(_t5), _t5->data);
-    int32_t _t6 = murmur3_32_1(string_1012);
-    i8_array* _t7 = hex_2(_t6, 8);
-    printf("%.*s\n", _arrayLen(_t7), _t7->data);
-    int32_t _t8 = murmur3_32_1(string_1013);
-    i8_array* _t9 = hex_2(_t8, 8);
-    printf("%.*s\n", _arrayLen(_t9), _t9->data);
-    _decUseStack(_t1, i8_array);
-    _decUseStack(_t3, i8_array);
-    _decUseStack(_t5, i8_array);
-    _decUseStack(_t7, i8_array);
-    _decUseStack(_t9, i8_array);
+    int32_t _t1000 = murmur3_32_1(string_1000);
+    i8_array* _t1001 = hex_2(_t1000, 8);
+    printf("%.*s\n", _arrayLen(_t1001), _t1001->data);
+    int32_t _t1002 = murmur3_32_1(string_1010);
+    i8_array* _t1003 = hex_2(_t1002, 8);
+    printf("%.*s\n", _arrayLen(_t1003), _t1003->data);
+    int32_t _t1004 = murmur3_32_1(string_1011);
+    i8_array* _t1005 = hex_2(_t1004, 8);
+    printf("%.*s\n", _arrayLen(_t1005), _t1005->data);
+    int32_t _t1006 = murmur3_32_1(string_1012);
+    i8_array* _t1007 = hex_2(_t1006, 8);
+    printf("%.*s\n", _arrayLen(_t1007), _t1007->data);
+    int32_t _t1008 = murmur3_32_1(string_1013);
+    i8_array* _t1009 = hex_2(_t1008, 8);
+    printf("%.*s\n", _arrayLen(_t1009), _t1009->data);
+    _decUseStack(_t1001, i8_array);
+    _decUseStack(_t1003, i8_array);
+    _decUseStack(_t1005, i8_array);
+    _decUseStack(_t1007, i8_array);
+    _decUseStack(_t1009, i8_array);
     _end();
 }
 /*

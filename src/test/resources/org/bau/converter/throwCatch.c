@@ -360,11 +360,11 @@ _int64_t_or_exception factorial_1(int64_t x) {
     return exception_int64_t_or_exception(_lastException);
 }
 org_bau_Exception_exception org_bau_Exception_exception_2(int64_t exceptionType, i8_array* message) {
-    org_bau_Exception_exception _t1 = org_bau_Exception_exception_new();
-    _t1.exceptionType = exceptionType;
+    org_bau_Exception_exception _t0 = org_bau_Exception_exception_new();
+    _t0.exceptionType = exceptionType;
     _incUseStack(message);
-    _t1.message = message;
-    return _t1;
+    _t0.message = message;
+    return _t0;
 }
 org_bau_Exception_exception org_bau_Exception_newException_1(i8_array* message) {
     org_bau_Exception_exception _t0 = org_bau_Exception_exception_2(0, message);
@@ -390,8 +390,8 @@ void _main() {
         do { do {
         _x0 = factorial_1(i);
         if (_x0.exception.exceptionType != -1) { _lastException = _x0.exception; goto catch0; }
-        int64_t _t0 = _x0.result;
-        printf("Factorial of %lld is %lld\n", (long long)i, (long long)_t0);
+        int64_t _t1000 = _x0.result;
+        printf("Factorial of %lld is %lld\n", (long long)i, (long long)_t1000);
         goto skip0;
         } while(0);
         catch0:;

@@ -335,11 +335,11 @@ i8_array* string_1001;
 i8_array* string_1002;
 int64_t i;
 org_bau_Exception_exception org_bau_Exception_exception_2(int64_t exceptionType, i8_array* message) {
-    org_bau_Exception_exception _t1 = org_bau_Exception_exception_new();
-    _t1.exceptionType = exceptionType;
+    org_bau_Exception_exception _t0 = org_bau_Exception_exception_new();
+    _t0.exceptionType = exceptionType;
     _incUseStack(message);
-    _t1.message = message;
-    return _t1;
+    _t0.message = message;
+    return _t0;
 }
 org_bau_Exception_exception org_bau_Exception_newException_1(i8_array* message) {
     org_bau_Exception_exception _t0 = org_bau_Exception_exception_2(0, message);

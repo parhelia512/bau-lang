@@ -52,12 +52,13 @@ public class BoundsTest {
                 new Parser("""
                         fun test()
                             x : int[10]
-                            i := 0..x.len
+                            i := 0 .. x.len
                             loop
                                 println(x[i]!)
                                 next : i + 1
                                 break next >= x.len
                                 i = next
+
                         test()
                         """).parse().format());
     }
@@ -68,12 +69,13 @@ public class BoundsTest {
             new Parser("""
                     fun test()
                         x : int[10]
-                        i := 0..x.len
+                        i := 0 .. x.len
                         loop
                             println(x[i]!)
                             next : i + 1
                             break next > x.len
                             i = next
+
                     test()
                     """).parse();
             fail();
@@ -88,12 +90,13 @@ public class BoundsTest {
             new Parser("""
                     fun test()
                         x : int[10]
-                        i := 0..x.len
+                        i := 0 .. x.len
                         loop
                             println(x[i]!)
                             next : i - 1
                             break next >= x.len
                             i = next
+
                     test()
                     """).parse();
             fail();

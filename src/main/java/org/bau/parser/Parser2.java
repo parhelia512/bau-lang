@@ -23,6 +23,7 @@ import org.bau.parser.stmt.Break;
 import org.bau.parser.stmt.Catch;
 import org.bau.parser.stmt.Comment;
 import org.bau.parser.stmt.Continue;
+import org.bau.parser.stmt.EmptyLine;
 import org.bau.parser.stmt.For;
 import org.bau.parser.stmt.If;
 import org.bau.parser.stmt.Loop;
@@ -30,6 +31,7 @@ import org.bau.parser.stmt.NativeCode;
 import org.bau.parser.stmt.PhiBlock;
 import org.bau.parser.stmt.Return;
 import org.bau.parser.stmt.Statement;
+import org.bau.parser.stmt.Switch;
 import org.bau.parser.stmt.Throw;
 import org.bau.runtime.Value;
 public class Parser2 {
@@ -40,11 +42,14 @@ public class Parser2 {
         INTEGER,
         HEX_INTEGER,
         STRING,
-        OPERATOR;
+        RAW_STRING,
+        OPERATOR,
+        COMMENT;
     }
     private Comment lastComment;
     private int lastPos;
     private int indent;
+    private int lastIndent;
     private Program program;
     private boolean isGlobalScope;
     private SourceFile sourceFile;
@@ -53,10 +58,13 @@ public class Parser2 {
     private final int posOffset;
     private String text;
     private TokenType type;
+    private boolean startOfLine;
     private String token;
+    private String numberToken;
     private int pos;
-    private boolean hasExplicitMainFunction;
     private ArrayList<Statement> init = new ArrayList<>();
+    private ArrayList<Statement> main = new ArrayList<>();
+    private ArrayList<Statement> topLevel = new ArrayList<>();
 
     public Parser2(Program program, SourceFile sourceFile, String module, String text, int posOffset) {
         Utils.assertTrue(module != null);
@@ -73,6 +81,7 @@ public class Parser2 {
     }
 
     public Program parse() {
+        startOfLine = true;
         readSpaces();
         Program program = parseProgram();
         return program.checkErrors();
@@ -96,7 +105,11 @@ public class Parser2 {
         while (true) {
             try {
                 while (matchOp("\n")) {
-                    // ignore
+                    Comment comment = readLastComment();
+                    if (comment != null && !comment.format().trim().isEmpty()) {
+                        getSourceFile().addSection(lastPos - 2, comment);
+                    }
+//                    getSourceFile().addSection(lastPos - 1, new EmptyLine());
                 }
                 if (type == TokenType.END) {
                     break;
@@ -112,11 +125,63 @@ public class Parser2 {
                 }
             }
         }
-        int firstPos = -1;
+        int topLevelPos = -1;
+
+        int todo;
+        // demo.bau: comments in functions are fine
+        // but commends at top-level might belong to a function or to main statements
+//        if (lastComment != null) {
+//            target.add(readLastComment());
+//        }
+
+        /*
+
+        if (lastComment != null) {
+            target.add(readLastComment());
+            if (matchOp("\n") && indent > minIndent) {
+                return;
+            }
+        }
+        if (matchOp("\n") && indent > minIndent) {
+            EmptyLine empty = new EmptyLine();
+            target.add(empty);
+            return;
+        } else {
+            // empty line with comment
+            if (lastComment != null) {
+                target.add(readLastComment());
+            }
+        }
+
+         */
+
+
+
         while (true) {
             try {
-                while (matchOp(";") || matchOp("\n")) {
-                    // ignore
+                while (true) {
+                    if (lastComment != null) {
+                        if (isGlobalScope) {
+                            topLevel.add(readLastComment());
+                            matchOp("\n");
+                        } else {
+                            // keep together with next section
+                            // break;
+                            if (!matchOp("\n")) {
+                                break;
+                            }
+                        }
+                    } else if (matchOp("\n")) {
+                        if (isGlobalScope) {
+                            EmptyLine empty = new EmptyLine();
+                            topLevel.add(empty);
+                        } else {
+                            // break;
+                            getSourceFile().addSection(lastPos - 2, new EmptyLine());
+                        }
+                    } else {
+                        break;
+                    }
                 }
                 if (type == TokenType.END) {
                     break;
@@ -132,10 +197,16 @@ public class Parser2 {
                 } else {
                     isGlobalScope = true;
                     int start = lastPos;
-                    int oldSize = init.size();
-                    parseStatement(init);
-                    if (init.size() != oldSize && firstPos < 0) {
-                        firstPos = start;
+                    ArrayList<Statement> list = new ArrayList<>();
+                    parseStatement(list, -1);
+                    topLevel.addAll(list);
+                    if (topLevelPos == -1) {
+                        topLevelPos = start;
+                    }
+                    if (hasAction(list)) {
+                        main.addAll(list);
+                    } else {
+                        init.addAll(list);
                     }
                 }
             } catch (IllegalStateException e) {
@@ -146,12 +217,34 @@ public class Parser2 {
                 }
             }
         }
-        if (module.isEmpty() && !hasExplicitMainFunction && !init.isEmpty()) {
-            FunctionDefinition def = new FunctionDefinition(new FullName("", "main"), pos);
-            def.list = init;
-            getSourceFile().addSection(firstPos, def);
+        FunctionDefinition def = new FunctionDefinition(new FullName(module, "_topLevel"), pos);
+        def.topLevel = true;
+        def.list = topLevel;
+        getSourceFile().addSection(topLevelPos, def);
+
+        int test;
+        Comment comment = readLastComment();
+        if (comment != null && !comment.format().trim().isEmpty()) {
+            getSourceFile().addSection(lastPos - 2, comment);
         }
+
         return program;
+    }
+
+    private boolean hasAction(ArrayList<Statement> list) {
+        // possibly switch to action mode
+        // (eg. "for" loops have assignment and a loop, so we need to check all statements)
+        for (Statement s : list) {
+            if (s instanceof Assignment) {
+                Assignment a = (Assignment) s;
+                if (!a.initial) {
+                    return true;
+                }
+            } else {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean parseImport() {
@@ -174,14 +267,14 @@ public class Parser2 {
         Import importStmt = new Import(name, id);
         importStmt.setLocation(sourceFile, location);
         int oldIndent = indent;
-        readEndOfStatement();
+        readEndOfStatement(null);
         ArrayList<String> symbolList = new ArrayList<>();
         while (indent > oldIndent) {
             if (!matchOp("\n")) {
                 String entry = readIdentifier();
                 int locationSymbol = lastPos - entry.length();
                 importStmt.addSymbol(entry, locationSymbol);
-                readEndOfStatement();
+                readEndOfStatement(null);
             }
         }
         getSourceFile().addImportStatement(importStmt, program);
@@ -201,7 +294,7 @@ public class Parser2 {
         if (!match("type")) {
             return false;
         }
-        int defIndent = indent;
+        int defIndent = lastIndent;
         Comment comment = readLastComment();
         String name = readIdentifier();
         if (name.length() < 2) {
@@ -236,7 +329,7 @@ public class Parser2 {
                 }
             }
         }
-        readEndOfStatement();
+        readEndOfStatement(null);
         MemoryType memoryType = DataType.getMemoryTypeFromName(name);
         if (owned) {
             if (memoryType == MemoryType.COPY) {
@@ -251,7 +344,7 @@ public class Parser2 {
             if (!matchOp("\n")) {
                 String fieldName = readIdentifier();
                 DataType fieldType = readType(false);
-                readEndOfStatement();
+                readEndOfStatement(null);
                 Variable var = new Variable(fieldName, fieldType);
                 var.addComment(readLastComment().getText());
                 fields.add(var);
@@ -276,7 +369,7 @@ public class Parser2 {
         if (!match("trait")) {
             return false;
         }
-        int defIndent = indent;
+        int defIndent = lastIndent;
         Comment comment = readLastComment();
         String name = readIdentifier();
         int location = lastPos - name.length();
@@ -295,7 +388,7 @@ public class Parser2 {
                 }
             }
         }
-        readEndOfStatement();
+        readEndOfStatement(null);
         while (indent > defIndent) {
             if (!matchOp("\n")) {
                 FullName fn = new FullName(module, readIdentifier());
@@ -333,13 +426,13 @@ public class Parser2 {
             return false;
         }
         Comment comment = readLastComment();
-        int defIndent = indent;
+        int defIndent = lastIndent;
         String id = readIdentifier();
         if (id.length() < 2) {
             syntaxError("Enum name '" + id + "' is too short, needs to be at least 2 characters");
         }
         int location = lastPos - id.length();
-        readEndOfStatement();
+        readEndOfStatement(null);
         LinkedHashMap<Variable, Expression> entries = new LinkedHashMap<>();
         HashMap<Long, String> map = new HashMap<>();
         long nextValue = 0;
@@ -355,7 +448,7 @@ public class Parser2 {
                 var.addComment(readLastComment().getText());
                 entries.put(var, expr);
                 nextValue++;
-                readEndOfStatement();
+                readEndOfStatement(null);
             }
         }
         DataType type = DataType.newEnumType(new FullName(module, id));
@@ -395,12 +488,24 @@ public class Parser2 {
     }
 
     private boolean parseFunctionDefinition() {
-        int startParse = lastPos;
         if (!match("fun")) {
             return false;
         }
+        boolean macro = false, forLoop = false;
+        if (match("macro")) {
+            macro = true;
+        } else if (match("for")) {
+            forLoop = true;
+        }
+        int startParse = lastPos;
+
+        // fun [macro|for] name(<params>)
+        // fun [macro|for] [type.]name(<params>)
+        // fun [macro|for] [type(t).]name(<params>)
+
         Comment comment = readLastComment();
-        int defIndent = indent;
+        int defIndent = lastIndent;
+
         isGlobalScope = false;
         int open = 0;
         boolean functionOnType = false;
@@ -434,29 +539,22 @@ public class Parser2 {
                 break;
             }
         }
-        if (module.isEmpty() && methodName.equals("main")) {
-            hasExplicitMainFunction = true;
-        }
         DataType callType = null;
         int location = -1;
+        pos = startParse;
+        // clear comment after setting pos
+        readLastComment();
+        read();
+
+        // do not stop on an empty line or comment
+//        int todoThisIsStrange;
+//        lastIndent += 4;
+
         if (functionOnType) {
-            pos = startParse;
-            read();
-            match("fun");
             callType = readTypeInThisModule();
             if (!matchOp(".")) {
                 syntaxError("Expected '.', got '" + token + "' ");
             }
-        } else {
-            pos = startParse;
-            read();
-            match("fun");
-        }
-        boolean macro = false, forLoop = false;
-        if (match("macro")) {
-            macro = true;
-        } else if (match("for")) {
-            forLoop = true;
         }
         methodName = readIdentifier();
         location = lastPos - methodName.length();
@@ -476,11 +574,12 @@ public class Parser2 {
         def.setLocation(sourceFile, location);
         currentFunctionDefinition = def;
         template = parseFunctionDeclarationArguments(template, def);
+
         while (true) {
             if (indent <= defIndent || type == TokenType.END) {
                 break;
             }
-            parseStatement(def.list);
+            parseStatement(def.list, defIndent);
         }
         currentFunctionDefinition = null;
         String id = def.getFunctionId();
@@ -523,8 +622,9 @@ public class Parser2 {
                     template = true;
                     type = DataType.TYPE_TYPE;
                     templateTypes.add(name);
-                    // we change the variable name, because the name is already a type
-                    Variable var = new Variable("_" + name, type);
+                    // in the older parser, changed the variable name, because the name is already a type
+                    // Variable var = new Variable("_" + name, type);
+                    Variable var = new Variable(name, type);
                     def.parameters.add(var);
                 } else {
                     type = readType(template);
@@ -570,7 +670,7 @@ public class Parser2 {
                     def.exceptionType = readType(false);
                 }
             }
-            readEndOfStatement();
+            readEndOfStatement(null);
         }
         return template;
     }
@@ -620,7 +720,7 @@ public class Parser2 {
             read();
             if (matchOp("..")) {
                 Expression upperBound = parseExpression();
-                String rangeTypeName = "0.." + upperBound.format();
+                String rangeTypeName = "0 .. " + upperBound.format();
                 DataType newType = DataType.newNumberType(rangeTypeName, 8);
                 newType.maxValue = upperBound;
                 return newType;
@@ -662,12 +762,28 @@ public class Parser2 {
         return t;
     }
 
-    private void parseStatement(ArrayList<Statement> target) {
+    private void parseStatement(ArrayList<Statement> target, int minIndent) {
         if (lastComment != null) {
             target.add(readLastComment());
+            if (matchOp("\n") && indent > minIndent) {
+                return;
+            }
         }
-        if (matchOp("\n")) {
+        if (matchOp("\n") && indent > minIndent) {
+            EmptyLine empty = new EmptyLine();
+            target.add(empty);
             return;
+        } else {
+            // empty line with comment
+            if (lastComment != null) {
+                target.add(readLastComment());
+            }
+        }
+        if (indent <= minIndent) {
+            return;
+        }
+        if (lastComment != null) {
+            target.add(readLastComment());
         }
         if (type == TokenType.IDENTIFIER) {
             // if we parse inside an 'if' statement etc,
@@ -721,9 +837,9 @@ public class Parser2 {
                     syntaxError("Trying to define a function inside a function");
                 }
                 identifierList.add(identifier1);
-                if (!matchOp(",")) {
+//                if (!matchOp(",")) {
                     break;
-                }
+//                }
             }
             DataType targetType = null;
             if (type == TokenType.IDENTIFIER) {
@@ -741,6 +857,7 @@ public class Parser2 {
                     expr = new NullValue(targetType);
                 }
                 boolean global = isGlobalScope;
+                Expression upperBound = null;
                 if (matchOp("..")) {
                     if (global) {
                         syntaxError("Global ranges are not allowed; they need to be in a function");
@@ -748,21 +865,22 @@ public class Parser2 {
                     if (!"0".equals(expr.format())) {
                         syntaxError("Range needs to start from 0: '" + expr.format() + "'");
                     }
-                    Expression upperBound = parseExpression();
+                    upperBound = parseExpression();
                     if (upperBound.canThrowException() != null) {
                         syntaxError("May not throw an exception here");
                     }
                 }
+                Assignment s = new Assignment();
                 for (String identifier : identifierList) {
-                    Assignment s = new Assignment();
                     s.initial = true;
                     s.isGlobalScope = global;
                     s.value = expr;
+                    s.upperBound = upperBound;
                     Variable v = new Variable(module, identifier, global, s.type);
                     s.leftValue = v;
                     target.add(s);
                 }
-                readEndOfStatement();
+                readEndOfStatement(s);
                 return;
             }
             if (matchOp(":")) {
@@ -789,7 +907,7 @@ public class Parser2 {
                 Variable v = new Variable(module, identifier, global, DataType.UNKNOWN);
                 s.leftValue = v;
                 s.type = DataType.UNKNOWN;
-                readEndOfStatement();
+                readEndOfStatement(s);
                 target.add(s);
                 return;
             } else if (matchOp("(")) {
@@ -814,8 +932,9 @@ public class Parser2 {
                         getSourceFile().addIncludeC(include);
                         s = s.substring(index + 1).trim();
                     }
-                    readEndOfStatement();
-                    target.add(new NativeCode(s + "\n"));
+                    NativeCode n = new NativeCode(s + "\n");
+                    readEndOfStatement(n);
+                    target.add(n);
                     return;
                 }
                 Call call = new Call();
@@ -829,20 +948,22 @@ public class Parser2 {
                         break;
                     }
                     t = DataType.UNKNOWN;
-                    if (t == null || !matchOp(".")) {
+                    if (!matchOp(".")) {
                         break;
                     }
                     // chained call
                     call = new Call();
+                    if (matchOp("\n")) {
+                        call.newlineAfterDot = true;
+                    }
                     call.statement = true;
                     call.args.add(expr);
-                    matchOp("\n");
                     identifier = readIdentifier();
                     if (!matchOp("(")) {
                         syntaxError("Only method calls are supported here");
                     }
                 }
-                readEndOfStatement();
+                readEndOfStatement(call);
                 if (expr instanceof Call) {
                     target.add((Call) expr);
                 }
@@ -898,15 +1019,14 @@ public class Parser2 {
                                 // chained call
                                 left = call;
                             } else {
-                                readEndOfStatement();
+                                readEndOfStatement(call);
                                 call.statement = true;
                                 target.add(call);
                                 return;
                             }
                         } else {
                             // eg calling a macro that doesn't return anything
-                            readEndOfStatement();
-                            int todoAddToTarget;
+                            readEndOfStatement(call);
                             return;
                         }
                     } else {
@@ -951,7 +1071,7 @@ public class Parser2 {
                 if (s.value instanceof NullValue) {
                     // for templates, we want to support assignment to null
                 }
-                readEndOfStatement();
+                readEndOfStatement(s);
                 target.add(s);
                 return;
             }
@@ -962,7 +1082,7 @@ public class Parser2 {
                 if (targetType != null && !targetType.equals(s.value.type())) {
                     syntaxError("The type of the variable is different than the type of the expression");
                 }
-                readEndOfStatement();
+                readEndOfStatement(s);
                 target.add(s);
                 return;
             } else if (matchOp("/=")) {
@@ -974,7 +1094,7 @@ public class Parser2 {
                         syntaxError("The type of the variable is different than the type of the expression");
                     }
                 }
-                readEndOfStatement();
+                readEndOfStatement(s);
                 target.add(s);
                 return;
             } else if (matchOp("%=")) {
@@ -986,7 +1106,7 @@ public class Parser2 {
                         syntaxError("The type of the variable is different than the type of the expression");
                     }
                 }
-                readEndOfStatement();
+                readEndOfStatement(s);
                 target.add(s);
                 return;
             } else if (matchOp("+=")) {
@@ -996,7 +1116,7 @@ public class Parser2 {
                 if (targetType != null && !targetType.equals(s.value.type())) {
                     syntaxError("The type of the variable is different than the type of the expression");
                 }
-                readEndOfStatement();
+                readEndOfStatement(s);
                 target.add(s);
                 return;
             } else if (matchOp("-=")) {
@@ -1006,7 +1126,7 @@ public class Parser2 {
                 if (targetType != null && !targetType.equals(s.value.type())) {
                     syntaxError("The type of the variable is different than the type of the expression");
                 }
-                readEndOfStatement();
+                readEndOfStatement(s);
                 target.add(s);
                 return;
             } else if (matchOp("&=")) {
@@ -1016,7 +1136,7 @@ public class Parser2 {
                 if (targetType != null && !targetType.equals(s.value.type())) {
                     syntaxError("The type of the variable is different than the type of the expression");
                 }
-                readEndOfStatement();
+                readEndOfStatement(s);
                 target.add(s);
                 return;
             } else if (matchOp("|=")) {
@@ -1026,7 +1146,7 @@ public class Parser2 {
                 if (targetType != null && !targetType.equals(s.value.type())) {
                     syntaxError("The type of the variable is different than the type of the expression");
                 }
-                readEndOfStatement();
+                readEndOfStatement(s);
                 target.add(s);
                 return;
             } else if (matchOp("^=")) {
@@ -1036,7 +1156,7 @@ public class Parser2 {
                 if (targetType != null && !targetType.equals(s.value.type())) {
                     syntaxError("The type of the variable is different than the type of the expression");
                 }
-                readEndOfStatement();
+                readEndOfStatement(s);
                 target.add(s);
                 return;
             } else if (matchOp(">>=")) {
@@ -1046,7 +1166,7 @@ public class Parser2 {
                 if (targetType != null && !targetType.equals(s.value.type())) {
                     syntaxError("The type of the variable is different than the type of the expression");
                 }
-                readEndOfStatement();
+                readEndOfStatement(s);
                 target.add(s);
                 return;
             } else if (matchOp("<<=")) {
@@ -1056,7 +1176,7 @@ public class Parser2 {
                 if (targetType != null && !targetType.equals(s.value.type())) {
                     syntaxError("The type of the variable is different than the type of the expression");
                 }
-                readEndOfStatement();
+                readEndOfStatement(s);
                 target.add(s);
                 return;
             }
@@ -1064,7 +1184,8 @@ public class Parser2 {
         syntaxError("Expected a statement, got '" + token + "'");
     }
 
-    private void readEndOfStatement() {
+    // stat: the statement (to attach comments to it if needed)
+    private void readEndOfStatement(Statement stat) {
         if (token != null && !matchOp(";") && !matchOp("\n")) {
             syntaxError("Expected end of statement, got '" + token + "'");
         }
@@ -1079,6 +1200,7 @@ public class Parser2 {
         call.name = identifier;
         module = "";
         boolean lastWasComma = false;
+        boolean lastWasNewline = false;
         int paramIndex = 0; // excluding 'this'
         while (true) {
             if (matchOp(")")) {
@@ -1097,11 +1219,13 @@ public class Parser2 {
                     syntaxError("Expected ',' before '" + p.format() + "' or parentheses around the expression, to make it easier to read");
                 }
             }
+            call.commas.add(lastWasComma);
+            call.newlines.add(lastWasNewline);
             call.args.add(p);
             // dangling ',' is supported
             lastWasComma = matchOp(",");
-            // new line after operation
-            matchOp("\n");
+            // newline after operation
+            lastWasNewline = matchOp("\n");
             paramIndex++;
         }
         return call;
@@ -1109,7 +1233,7 @@ public class Parser2 {
 
     private void parseReturn(ArrayList<Statement> target) {
         if (currentFunctionDefinition == null) {
-            syntaxError("Return needs to be inside of a function");
+            syntaxError("Return is outside of a function; it needs to be inside of a function");
         }
         Return b = new Return(null);
         if (matchOp("\n") || matchOp(";")) {
@@ -1133,7 +1257,7 @@ public class Parser2 {
     }
 
     private void parseCatch(ArrayList<Statement> target) {
-        int catchIndent = indent;
+        int catchIndent = lastIndent;
         Catch catchStat = new Catch();
         String id = readIdentifier();
         Variable var = new Variable(id, DataType.UNKNOWN);
@@ -1157,7 +1281,7 @@ public class Parser2 {
                     break;
                 }
             }
-            parseStatement(catchStat.list);
+            parseStatement(catchStat.list, catchIndent);
         }
         target.add(catchStat);
     }
@@ -1228,26 +1352,19 @@ public class Parser2 {
     }
 
     private void parseSwitch(ArrayList<Statement> target) {
-        int switchIndent = indent;
-        If ifStatement = new If();
-        If topIfStatement = ifStatement;
-        Expression switchExpr = parseExpression();
-        boolean elsePart = false;
-        boolean first = true;
+        int switchIndent = lastIndent;
+        Switch s = new Switch();
+        s.expression = parseExpression();
         if (!matchOp("\n")) {
             syntaxError("Expected end of statement, got '" + token + "' in 'switch' statement");
         }
+        ArrayList<Statement> statementList;
         while (true) {
             if (match("case")) {
-                Expression condition = null;
+                ArrayList<Expression> list = new ArrayList<>();
                 while (true) {
                     Expression caseExpr = parseExpression();
-                    Expression cond = new Operation(switchExpr, "==", caseExpr);
-                    if (condition == null) {
-                        condition = cond;
-                    } else {
-                        condition = new Operation(condition, "or", cond);
-                    }
+                    list.add(caseExpr);
                     if (!matchOp(",")) {
                         break;
                     }
@@ -1257,45 +1374,31 @@ public class Parser2 {
                 if (!matchOp("\n")) {
                     syntaxError("Expected end of statement, got '" + token + "' in 'switch' statement");
                 }
-                if (!first) {
-                    If elseIf = new If();
-                    ArrayList<Statement> list = new ArrayList<>();
-                    list.add(elseIf);
-                    list.add(new PhiBlock());
-                    ifStatement.elseList = list;
-                    ifStatement.elseAutoClose = List.of();
-                    ifStatement = elseIf;
-                }
-                first = false;
-                ifStatement.condition = condition;
+                s.cases.add(list);
+                statementList = new ArrayList<Statement>();
+                s.lists.add(statementList);
             } else if (match("else")) {
                 if (!matchOp("\n")) {
                     syntaxError("Expected end of statement, got '" + token + "' in 'switch' statement");
                 }
-                first = false;
-                elsePart = true;
+                statementList = new ArrayList<Statement>();
+                s.elseList = statementList;
             } else {
                 break;
             }
-            ArrayList<Statement> list = new ArrayList<>();
             while (true) {
                 if (indent <= switchIndent) {
                     break;
                 }
-                parseStatement(list);
+                parseStatement(statementList, switchIndent);
             }
-            if (elsePart) {
-                ifStatement.elseList = list;
-                break;
-            }
-            ifStatement.thenList = list;
             switchIndent = indent;
         }
-        target.add(topIfStatement);
+        target.add(s);
     }
 
     private void parseIf(ArrayList<Statement> target) {
-        int ifIndent = indent;
+        int ifIndent = lastIndent;
         boolean sameLine;
         If ifStatement = new If();
         If topIfStatement = ifStatement;
@@ -1312,10 +1415,10 @@ public class Parser2 {
                 sameLine = false;
             }
             ArrayList<Statement> list = new ArrayList<>();
-            if (ifStatement.thenList == null) {
-                ifStatement.thenList = list;
-            } else {
+            if (elsePart) {
                 ifStatement.elseList = list;
+            } else {
+                ifStatement.thenList = list;
             }
             while (true) {
                 if (sameLine) {
@@ -1327,7 +1430,7 @@ public class Parser2 {
                         break;
                     }
                 }
-                parseStatement(list);
+                parseStatement(list, ifIndent);
             }
             if (elsePart) {
                 break;
@@ -1337,13 +1440,11 @@ public class Parser2 {
             }
             ifIndent = indent;
             if (match("elif")) {
+                ifStatement.elif = true;
                 If elseIf = new If();
                 condition = parseCondition();
                 elseIf.condition = condition;
-                list.add(elseIf);
-                list.add(new PhiBlock());
-                ifStatement.elseList = list;
-                ifStatement.elseAutoClose = List.of();
+                ifStatement.elseList = List.of(elseIf);
                 ifStatement = elseIf;
             } else if (match("else")) {
                 elsePart = true;
@@ -1359,7 +1460,7 @@ public class Parser2 {
             syntaxError("For loops in macros are currently not supported");
         }
         For forStatement = new For();
-        int loopIndent = indent;
+        int loopIndent = lastIndent;
         String variableName = readIdentifier();
         forStatement.variable = new Variable(variableName, DataType.UNKNOWN);
         if (!matchOp(":=")) {
@@ -1387,16 +1488,17 @@ public class Parser2 {
                     break;
                 }
             }
-            parseStatement(forStatement.list);
+            parseStatement(forStatement.list, loopIndent);
         }
         target.add(forStatement);
     }
 
     private void parseLoop(ArrayList<Statement> target) {
-        int loopIndent = indent;
+        int loopIndent = lastIndent;
         Loop loop = new Loop();
         if (type == TokenType.OPERATOR && ("\n".equals(token) || "{".equals(token))) {
             loop.condition = NumberValue.valueOf(1);
+            loop.endless = true;
         } else {
             loop.condition = parseCondition();
         }
@@ -1404,6 +1506,7 @@ public class Parser2 {
         if (matchOp("\n")) {
             sameLine = false;
         } else if (matchOp("{")) {
+            loopIndent = -1;
             sameLine = true;
         } else {
             syntaxError("Expected end of statement, got '"+token+"' in 'while' statement");
@@ -1419,7 +1522,7 @@ public class Parser2 {
                     break;
                 }
             }
-            parseStatement(loop.list);
+            parseStatement(loop.list, loopIndent);
         }
         // before the loop (we jump here from the end of the loop)
         target.add(new PhiBlock());
@@ -1468,28 +1571,39 @@ public class Parser2 {
             Operation op = new Operation(null, "not", parseExpressionPrimary());
             return op;
         } else if (type == TokenType.INTEGER) {
-            String n = token;
+            String t = token;
+            String n = numberToken;
             read();
             long v = Long.parseLong(n);
-            Expression expr = NumberValue.valueOf(v);
+            Expression expr = NumberValue.valueOf(t, v);
             if (matchOp(".")) {
                 expr = parseFunctionOnLiteral(expr);
             }
             return expr;
         } else if (type == TokenType.HEX_INTEGER) {
-            String n = token;
+            String t = token;
+            String n = numberToken;
             read();
             long v = NumberValue.parseUnsignedHexLong(n.substring(2));
-            Expression expr = new NumberValue(n, new Value.ValueInt(v), DataType.INT_TYPE, true);
+            Expression expr = new NumberValue(t, new Value.ValueInt(v), DataType.INT_TYPE, true);
             if (matchOp(".")) {
                 expr = parseFunctionOnLiteral(expr);
             }
             return expr;
         } else if (type == TokenType.FLOAT) {
-            String n = token;
+            String t = token;
+            String n = numberToken;
             read();
             double v = Double.parseDouble(n);
-            Expression expr = new NumberValue("" + v, new Value.ValueFloat(v), DataType.FLOAT_TYPE, false);
+            Expression expr = new NumberValue(t, new Value.ValueFloat(v), DataType.FLOAT_TYPE, false);
+            if (matchOp(".")) {
+                expr = parseFunctionOnLiteral(expr);
+            }
+            return expr;
+        } else if (type == TokenType.RAW_STRING) {
+            String n = token;
+            read();
+            Expression expr = StringLiteral.newStringLiteral(n, true);
             if (matchOp(".")) {
                 expr = parseFunctionOnLiteral(expr);
             }
@@ -1497,7 +1611,7 @@ public class Parser2 {
         } else if (type == TokenType.STRING) {
             String n = token;
             read();
-            Expression expr = StringLiteral.newStringLiteral(n);
+            Expression expr = StringLiteral.newStringLiteral(n, false);
             if (matchOp(".")) {
                 expr = parseFunctionOnLiteral(expr);
             }
@@ -1537,8 +1651,11 @@ public class Parser2 {
     private Expression parsePossibleDot(Expression v) {
         DataType vt = null;
         while (true) {
+            boolean newlineAfterDot = false;
             if (matchOp(".")) {
-                matchOp("\n");
+                if (matchOp("\n")) {
+                    newlineAfterDot = true;
+                }
                 String f;
                 if (v instanceof Variable && type == TokenType.INTEGER) {
                     int index = Integer.parseInt(token);
@@ -1551,6 +1668,7 @@ public class Parser2 {
                     matchOp("\n");
                     Call call = new Call();
                     call.on = v;
+                    call.newlineAfterDot = newlineAfterDot;
                     v = parseCall(vt, module, f, call, true);
                 } else {
                     DataType type = DataType.UNKNOWN;
@@ -1594,8 +1712,7 @@ public class Parser2 {
                 break;
             }
             read();
-            // new line after operation
-            matchOp("\n");
+            boolean newlineAfterOperator = matchOp("\n");
             Expression right = parseExpressionPrimary();
             while (true) {
                 String o2 = operatorToken();
@@ -1608,7 +1725,9 @@ public class Parser2 {
             if (Operation.isComparison(op) && (expr.isComparison() || right.isComparison())) {
                 syntaxError("Comparing a result of a comparison requires parenthesis");
             }
-            expr = new Operation(expr, op, right);
+            Operation opExpr = new Operation(expr, op, right);
+            opExpr.newlineAfterOperator = newlineAfterOperator;
+            expr = opExpr;
         }
         return expr;
     }
@@ -1635,6 +1754,7 @@ public class Parser2 {
     private void readSpaces() {
         token = null;
         lastPos = pos;
+        lastIndent = indent;
         indent = 0;
         while (true) {
             if (pos >= text.length()) {
@@ -1645,18 +1765,29 @@ public class Parser2 {
             if (c == ' ') {
                 pos++;
                 indent++;
-            } else if (c == '\n') {
-                indent = 0;
-                pos++;
             } else {
                 break;
             }
         }
         read();
+        if ("\n".equals(token)/* && lastComment == null*/) {
+            // empty line: pretend its the indentation of the previous line
+            if (lastComment != null && lastComment.indent == -1) {
+                lastComment.indent = indent;
+            }
+            if (indent > 0) {
+                // if indent is 0, then it's top level (ends a function)
+                indent = Integer.MAX_VALUE & ~3;
+            }
+        }
+        if ((indent & 3) != 0) {
+            syntaxError("Unexpected indentation: " + indent + " is not a factor of 4");
+        }
     }
 
     private void read() {
         token = null;
+        lastIndent = indent;
         lastPos = pos;
         while (true) {
             if (pos >= text.length()) {
@@ -1665,10 +1796,23 @@ public class Parser2 {
             }
             char c = text.charAt(pos);
             if (c == ' ') {
+                if (startOfLine) {
+                    indent++;
+                }
                 pos++;
+            } else if (c == '\n') {
+                lastIndent = indent;
+                indent = 0;
+                startOfLine = true;
+                pos++;
+                type = TokenType.OPERATOR;
+                token = "\n";
+                return;
             } else if (c == '#') {
                 // comment
                 pos++;
+                boolean isLineComment = startOfLine;
+                startOfLine = false;
                 c = text.charAt(pos);
                 if (c == '#') {
                     // block comment
@@ -1697,15 +1841,14 @@ public class Parser2 {
                     } else {
                         lastComment = new Comment(comment);
                     }
-                    getSourceFile().addSection(lastPos, lastComment);
                 } else {
                     // line comment
                     while (true) {
                         c = text.charAt(pos);
+                        pos++;
                         if (c == '\n') {
                             break;
                         }
-                        pos++;
                     }
                     String comment = text.substring(lastPos, pos);
                     if (lastComment != null) {
@@ -1713,9 +1856,20 @@ public class Parser2 {
                     } else {
                         lastComment = new Comment(comment);
                     }
-                    getSourceFile().addSection(lastPos, lastComment);
                 }
+//                if (isLineComment) {
+                // if (indent > 0) {
+                    // if the comment is on a separate line
+                    type = TokenType.OPERATOR;
+                    token = "\n";
+                    return;
+//                } else {
+//                    System.out.println("not a line comment: " + text.substring(lastPos, pos) + ".");
+//
+//
+//                }
             } else {
+                startOfLine = false;
                 break;
             }
         }
@@ -1752,7 +1906,8 @@ public class Parser2 {
                         c = text.charAt(pos);
                     }
                     type = TokenType.HEX_INTEGER;
-                    token = buff.toString();
+                    token = text.substring(start, pos);
+                    numberToken = buff.toString();
                 } else {
                     while (true) {
                         if (c >= '0' && c <= '9') {
@@ -1776,11 +1931,13 @@ public class Parser2 {
                         c = text.charAt(pos);
                     }
                     type = floatingPoint ? TokenType.FLOAT : TokenType.INTEGER;
-                    token = buff.toString();
+                    token = text.substring(start, pos);
+                    numberToken = buff.toString();
                 }
             } else {
                 type = floatingPoint ? TokenType.FLOAT : TokenType.INTEGER;
-                token = buff.toString();
+                numberToken = buff.toString();
+                token = text.substring(start, pos);
             }
         } else if (c == '\'') {
             pos++;
@@ -1882,7 +2039,7 @@ public class Parser2 {
                 }
             }
             token = text.substring(begin, pos - len);
-            type = TokenType.STRING;
+            type = TokenType.RAW_STRING;
             token = StringLiteral.unindentRawMultiLineString(token);
         } else if (c == '\t') {
             syntaxError("Tab characters are not supported sorry");

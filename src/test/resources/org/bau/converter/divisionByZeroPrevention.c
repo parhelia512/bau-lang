@@ -425,11 +425,11 @@ int64_t idiv_2(int64_t a, int64_t b) {
     return a > 0 ? LLONG_MAX : LLONG_MIN;
 }
 org_bau_Exception_exception org_bau_Exception_exception_2(int64_t exceptionType, i8_array* message) {
-    org_bau_Exception_exception _t1 = org_bau_Exception_exception_new();
-    _t1.exceptionType = exceptionType;
+    org_bau_Exception_exception _t0 = org_bau_Exception_exception_new();
+    _t0.exceptionType = exceptionType;
     _incUseStack(message);
-    _t1.message = message;
-    return _t1;
+    _t0.message = message;
+    return _t0;
 }
 org_bau_Exception_exception org_bau_Exception_newException_1(i8_array* message) {
     org_bau_Exception_exception _t0 = org_bau_Exception_exception_2(0, message);
@@ -466,7 +466,7 @@ void _main() {
     _x0 = divisionByZeroThrow_2(10, 0);
     ;
     if (_x0.exception.exceptionType != -1) { _lastException = _x0.exception; goto catch0; }
-    int64_t _t2 = _x0.result;
+    int64_t _t0 = _x0.result;
     goto skip0;
     } while(0);
     catch0:;
@@ -478,7 +478,7 @@ void _main() {
     _x1 = divisionByZeroThrow_2(10, 1);
     ;
     if (_x1.exception.exceptionType != -1) { _lastException = _x1.exception; goto catch1; }
-    int64_t _t3 = _x1.result;
+    int64_t _t1 = _x1.result;
     goto skip1;
     } while(0);
     catch1:;

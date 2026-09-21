@@ -32,7 +32,8 @@ fun convertFloatToI8Array(n float) i8[]
         return 'Infinity'
     elif n == -1.0 / 0
         return '-Infinity'
-    pos, e := 0
+    pos := 0
+    e := 0
     if n < 0
         pos = 1
         n = -n

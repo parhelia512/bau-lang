@@ -16,7 +16,7 @@ fun test()
         break next >= data.len
         i = next
     println(sum)
-    
+
 test()
 
 ## Expected

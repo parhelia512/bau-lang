@@ -101,9 +101,9 @@ fun hashCode(data i8[]) int
         j := 0..data.len - 3
         loop 1
             x := (data[j]! & 0xff) |
-                 ((data[j + 1]! & 0xff) << 8) |
-                 ((data[j + 2]! & 0xff) << 16) |
-                 ((data[j + 3]! & 0xff) << 24)
+                ((data[j + 1]! & 0xff) << 8) |
+                ((data[j + 2]! & 0xff) << 16) |
+                ((data[j + 3]! & 0xff) << 24)
             h = (h + x) * 0x9e3779b185ebca87
             n : j + 4
             break n >= data.len - 3
@@ -132,9 +132,9 @@ fun int.hashCode() int
 fun i8[].hashCode() int
     return hashCode(this)
 
-type str 
+type str
     value i8[]
-  
+
 fun int.equals(other int) int
     return this == other
 

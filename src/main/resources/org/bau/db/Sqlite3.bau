@@ -163,7 +163,8 @@ fun convertTextToInt(t text) int
 
 fun macro newInstance(T type, data i8[]) T
     r T: Record()
-    return r # this will call the conversion method
+    # this will call the conversion method
+    return r
 
 fun printText(array text..)
     size := 0

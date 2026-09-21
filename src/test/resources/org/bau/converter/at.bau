@@ -38,17 +38,17 @@ fun main()
         fun abs(x)       (?0<x(x):-x)
         fun isNaN(x)     (1-(x=x))
         fun isNegZero(x) {(x=0)&(1/x=NEG_INFINITY)}
-        fun min(a,b)     { if isNaN(a) { return a } 
+        fun min(a,b)     { if isNaN(a) { return a }
                    if a = b & a = 0 & isNegZero(b) { return b }
                    if a <= b {return a }
                    return b }
-        fun max(a,b)     { if isNaN(a) { return a } 
+        fun max(a,b)     { if isNaN(a) { return a }
                    if a = b & a = 0 & isNegZero(a) { return b }
                    if a >= b { return a }
                    return b }
         fun floor(x)     { if isNaN(x) | x = 0 { return x }
                    i : x | 0; d : i;
-                   if d = x | x >= 0 { return d } 
+                   if d = x | x >= 0 { return d }
                    return d - 1 }
         fun ceil(x)      { return -floor(-x) }
         fun round(x)     { if isNaN(x) { return 0 }
@@ -59,7 +59,7 @@ fun main()
         fun exp(x)       { if isNaN(x) | x = POS_INFINITY { return x }
                    if x < 0 { return 1 / exp(-x) }
                    if x > 2 { r : exp(x / 2);  return r * r }
-                   approx : 1.0; term : 1.0; 
+                   approx : 1.0; term : 1.0;
                    i : 1; while i < 22 { term:term*x/i ; approx:approx+term; i:i+1 }
                    return approx }
         fun log(x)       { if x = 0 { return NEG_INFINITY }
@@ -68,12 +68,12 @@ fun main()
                    if x < 0.7 { return log(2 * x) - LOG2 }
                    if x >= 1.5 { return log(x / 2) + LOG2 }
                    base:x-1; sign:1; term:base; result:term;
-                   i : 2; while i < 30 {sign:-sign; term : term * base; 
+                   i : 2; while i < 30 {sign:-sign; term : term * base;
                    result:result+sign*term/i; i:i+1}
                    return result }
         fun sqrt(x)      {!exp(log(x)/2)}
         fun log10(x)     {!log(x)/LOG10}
-        fun e(x,n)       {@n>0{x:x*10;n:n-1};@n<0{x:x/10;n:n+1};!x} 
+        fun e(x,n)       {@n>0{x:x*10;n:n-1};@n<0{x:x/10;n:n+1};!x}
         fun pow(x,y)     { if x > 0 & y > 0 { return exp(y * log(x)) }
                    if y = 0.0 { return 1.0 }
                    if isNaN(x) | isNaN(y) { return NOT_A_NUMBER }
@@ -365,8 +365,8 @@ fun At.read()
         pos += 1
         if pos < code.data.len
             c = code.charAt(pos)
-            if (first == ord('<') and (c == ord('<') or c == ord('=') or c == ord('>'))) or 
-                    (first == ord('*') and c == ord('*')) or 
+            if (first == ord('<') and (c == ord('<') or c == ord('=') or c == ord('>'))) or
+                    (first == ord('*') and c == ord('*')) or
                     (first == ord('>') and (c == ord('=') or c == ord('>')))
                 pos += 1
         token = code.substring(start, pos)
@@ -424,7 +424,7 @@ fun At.runExpr(expr Expr) Value
             result = runExpr(expr.list.get(1))
     elif expr.exprType == LOOP
         loop
-            break int(runExpr(expr.list.get(0)).get(0)) == 0 
+            break int(runExpr(expr.list.get(0)).get(0)) == 0
             break hasReturnValue or counter <= 0
             counter -= 1
             result = runExpr(expr.list.get(1))

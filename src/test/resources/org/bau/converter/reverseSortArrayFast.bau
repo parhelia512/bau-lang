@@ -2,7 +2,7 @@ import org.bau.Env
 import org.bau.Int
 import org.bau.Utils
 
-fun reverse(buff T[], first 0..buff.len, last 0..buff.len)
+fun reverse(buff T[], first 0 .. buff.len, last 0 .. buff.len)
     loop first < last
         temp : buff[first]!
         buff[first]! = buff[last]!
@@ -48,15 +48,15 @@ fun shellSort(a T[])
         g : (h + 15) / 16
         break g < 0
         break g >= a.len
-        i := 0..a.len
+        i := 0 .. a.len
         i = g
         loop i < a.len
             t : a[i]!
             break i - g < 0
             break i - g >= a.len
-            j := 0..a.len
+            j := 0 .. a.len
             j = i - g
-            prev := 0..a.len
+            prev := 0 .. a.len
             prev = i
             loop a[j]! > t
                 a[prev]! = a[j]!
@@ -75,7 +75,7 @@ fun main()
     if Env.argCount() > 1
         repeat = Int.parseInt(Env.arg(1))
     if Env.argCount() > 2
-        count = Int.parseInt(Env.arg(2))        
+        count = Int.parseInt(Env.arg(2))
     println('repeat ' repeat ' count ' count)
     test : int[count]
     if test.len <= 1

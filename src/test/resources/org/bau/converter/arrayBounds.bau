@@ -1,9 +1,9 @@
 fun test()
     data : i8[10]
-    for i:= until(data.len)
+    for i := until(data.len)
         data[i]! = i
     sum := 0
-    for i:= range(0 20)
+    for i := range(0 20)
         sum += data[i]
     println(sum)
 

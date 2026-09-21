@@ -131,14 +131,19 @@ fun main()
 
 WIDTH : 14
 HEIGHT : 24
-score, highScore, position, rotation, running, blockType := 0
+score := 0
+highScore := 0
+position := 0
+rotation := 0
+running := 0
+blockType := 0
 FIELD : i8[WIDTH * HEIGHT]
 #      A0123 B0123 C0123 D0123 E0123 F0123 G0123 H0123 I0123 J0123 K0123 L0123 M0123 N0123 O0123 P0123 Q0123 R0123 S0123 T0123 U0123
-shapes: ``
-        ......       X     X      X    X           X     X     X           X                      XX      X   X      XX         .....
-        .XX...XXXX  XXX    XX    XX    X    X X    X     X     XX   XXX   XX     XX   XX    XXX    X    XXX   XXX    X    XXX   XXX..
-        .XX...              X    X     XX   XXX   XX     X     X     X     X    XX     XX   X      X                 X      X   X.X..
-        ......                                           X                                                                      ......
-        ``
+shapes : `
+    ......       X     X      X    X           X     X     X           X                      XX      X   X      XX         .....
+    .XX...XXXX  XXX    XX    XX    X    X X    X     X     XX   XXX   XX     XX   XX    XXX    X    XXX   XXX    X    XXX   XXX..
+    .XX...              X    X     XX   XXX   XX     X     X     X     X    XX     XX   X      X                 X      X   X.X..
+    ......                                           X                                                                      ......
+    `
 #          ABCDEFGHIJKLMNOPQRSTU
 rotated : 'AIJMNOURBKLCDEPQFSTFG'

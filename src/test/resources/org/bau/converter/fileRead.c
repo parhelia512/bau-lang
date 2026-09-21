@@ -379,15 +379,15 @@ void _main() {
         printf("file not found\n");
         return;
     }
-    i8_array* _t11 = i8_array_new(16);
-    _incUseStack(_t11);
-    i8_array* data = _t11;
-    int64_t _t12 = org_bau_File_File_read_4(file, data, 0, 15);
+    i8_array* _t0 = i8_array_new(16);
+    _incUseStack(_t0);
+    i8_array* data = _t0;
+    int64_t _t1 = org_bau_File_File_read_4(file, data, 0, 15);
     ;
     data->data[5] = 0;
     printf("%.*s\n", _arrayLen(data), data->data);
     _decUseStack(data, i8_array);
-    _decUseStack(_t11, i8_array);
+    _decUseStack(_t0, i8_array);
     _decUseStack(file, org_bau_File_File);
     _end();
 }

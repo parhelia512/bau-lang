@@ -5,8 +5,29 @@ package org.bau;
 Name: Lei, Kuona, Mya, Pha, Tau (Anouk), Atlas, Soma (Anouk2), Twelve, Ro
 https://github.com/NicoNex/tau
 
+https://sneklang.org/doc/snek.html
+
+maybe support bracet, and compact closing-brace (still no semicolons)
+
+chess simplifications: look at "nibble chess":
+https://github.com/maksimKorzh/nibble-chess
+
 ModuleTest.circularImport
 disallow circular imports at compile time?
+
+https://github.com/Wyzer-Lang/wyzer
+easy memory safety without tracing GC
+https://news.ycombinator.com/item?id=49209385#49211026
+
+C++ float-to-int conversion can be undefined behavior
+https://kttnr.net/blog/cpp-float-to-int-conversion-undefined-behavior/
+https://news.ycombinator.com/item?id=49107888
+
+std:hive / plf::colony
+https://lemire.me/blog/2026/08/02/how-fast-is-c26s-stdhive/
+https://github.com/mattreecebentley/plf_hive
+
+compiler warning if not 4 spaces used for indentation
 
 barrier mechanism: implement, check advantages & disadvantages, check if other languages support it
 

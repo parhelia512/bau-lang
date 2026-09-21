@@ -7,17 +7,16 @@ import org.bau.parser.FunctionContext;
 import org.bau.parser.MemoryType;
 import org.bau.parser.Program;
 import org.bau.parser.ProgramContext;
+import org.bau.parser.Section;
 import org.bau.parser.expr.Expression;
-import org.bau.parser.expr.StringLiteral;
 import org.bau.parser.expr.Variable;
 import org.bau.runtime.Memory;
 
-public class NativeCode implements Statement {
+public class EmptyLine implements Statement, Section {
 
-    private final String nativeCode;
-
-    public NativeCode(String nativeCode) {
-        this.nativeCode = nativeCode;
+    @Override
+    public String formatSource() {
+        return "\n";
     }
 
     @Override
@@ -27,44 +26,47 @@ public class NativeCode implements Statement {
 
     @Override
     public StatementResult run(Memory m) {
-        // m.print(new Value.ValueI8Array("native ".getBytes(StandardCharsets.UTF_8)));
-        // m.print(new Value.ValueI8Array(nativeCode.getBytes(StandardCharsets.UTF_8)));
-        // m.println();
-        return StatementResult.OK;
+        throw new IllegalStateException();
     }
 
     @Override
-    public void collectTypes(HashSet<DataType> set, MemoryType memoryType) {
-        // nothing
-    }
-
     public void optimize(ProgramContext context) {
+        throw new IllegalStateException();
     }
 
     @Override
     public String toC() {
-        return nativeCode;
+        throw new IllegalStateException();
     }
 
+    @Override
     public String format() {
-        return "native('" + StringLiteral.escape(nativeCode) + "')\n";
+        return "\n";
+    }
+
+    @Override
+    public void collectTypes(HashSet<DataType> set, MemoryType memoryType) {
+        throw new IllegalStateException();
     }
 
     @Override
     public void used(Program program) {
+        throw new IllegalStateException();
     }
 
     @Override
     public DataType canThrowException() {
-        return null;
+        throw new IllegalStateException();
     }
 
     @Override
     public void setVariableVersions(String name, int oldVersion, int newVersion) {
+        throw new IllegalStateException();
     }
 
     @Override
     public void resolveTypesForStatement(FunctionContext context) {
+        throw new IllegalStateException();
     }
 
 }

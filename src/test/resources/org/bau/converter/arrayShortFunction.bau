@@ -1,7 +1,7 @@
 fun fill(data int[])
     if data.len <= 0
         return
-    i := 0..data.len
+    i := 0 .. data.len
     loop
         data[i]! = i
         next : i + 1

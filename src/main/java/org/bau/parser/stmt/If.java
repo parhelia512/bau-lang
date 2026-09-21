@@ -22,6 +22,7 @@ public class If implements Statement {
     public List<Statement> thenAutoClose;
     public List<Statement> elseList;
     public List<Statement> elseAutoClose;
+    public boolean elif;
 
     @Override
     public If replace(Variable old, Expression with) {
@@ -142,9 +143,18 @@ public class If implements Statement {
             buff.append(Statement.indent(s.format()));
         }
         if (elseList != null) {
-            buff.append("else\n");
-            for (Statement s : elseList) {
-                buff.append(Statement.indent(s.format()));
+            if (elif) {
+                if (elseList.size() != 1) {
+                    throw new AssertionError();
+                }
+                Statement elif = elseList.get(0);
+                // el + if = elif
+                buff.append("el" + elif.format());
+            } else {
+                buff.append("else\n");
+                for (Statement s : elseList) {
+                    buff.append(Statement.indent(s.format()));
+                }
             }
         }
         return buff.toString();

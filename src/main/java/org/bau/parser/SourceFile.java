@@ -13,8 +13,9 @@ import java.util.TreeSet;
 
 import org.bau.parser.expr.Variable;
 import org.bau.parser.stmt.Comment;
+import org.bau.parser.stmt.EmptyLine;
 
-//context for formatting and for line numbers
+// context for formatting and for line numbers
 public class SourceFile {
 
     private static final int MAX_ERRORS = 50;
@@ -273,6 +274,7 @@ public class SourceFile {
     }
 
     public void addSection(int pos, Section section) {
+        System.out.println("#### addSection " + module + " pos=" + pos + " type=" + section.getClass().getSimpleName() + "\n" + section.formatSource());
         sections.put(pos, section);
     }
 
@@ -281,9 +283,6 @@ public class SourceFile {
         if (headerComment != null) {
             buff.append(headerComment.format());
         }
-        int todo;
-        //     private ArrayList<Import> importStatements = new ArrayList<>();
-
         HashMap<String, String> moduleNameToId = new HashMap<>();
         ArrayList<String> importModules = new ArrayList<>();
         for (Entry<String, String> e : imports.entrySet()) {
@@ -310,19 +309,29 @@ public class SourceFile {
                 buff.append("    " + s + "\n");
             }
         }
-
-        // private TreeMap<String, DataType> dataTypes = new TreeMap<>();
-
         return buff.toString();
     }
 
     public String formatSource() {
         StringBuilder buff = new StringBuilder();
+        Section last = null;
         for (Entry<Integer, Section> e : sections.entrySet()) {
-            int start = e.getKey();
             Section section = e.getValue();
-            // buff.append(start).append(" " + section.getClass().getName() + "\n");
-            buff.append(section.formatSource() + "\n");
+            if (section instanceof EmptyLine) {
+                if (last != null && last instanceof EmptyLine) {
+                    // keeping one
+                    continue;
+                }
+            }
+            if (last != null) {
+                if (last instanceof Import && section instanceof Import) {
+                    // no empty line between imports
+                } else if (!(last instanceof EmptyLine) && !(section instanceof EmptyLine)) {
+                    buff.append("\n");
+                }
+            }
+            buff.append(section.formatSource());
+            last = section;
         }
         return buff.toString();
     }

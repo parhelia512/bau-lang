@@ -5,6 +5,40 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
+/*
+
+mychess.sh:
+#!/bin/bash
+exec java -cp $HOME/data/bau/target/test-classes org.bau.games.ChessUCI
+
+./build/cutechess-cli -debug all \
+  -engine cmd=./mychess.sh \
+  -engine cmd=stockfish \
+  -each proto=uci tc=40/6 \
+  -rounds 1 \
+
+./build/cutechess-cli  -engine cmd=./mychess.sh -engine cmd=stockfish -each proto=uci option.UCI_LimitStrength=true option.UCI_Elo=1350 tc=40/6 -rounds 1
+
+./build/cutechess-cli  -engine cmd=./mychess.sh -engine cmd=stockfish -each proto=uci option.UCI_LimitStrength=true option.UCI_Elo=1350 -each depth=10 -rounds 1
+
+./build/cutechess-cli  -engine cmd=./mychess.sh -engine cmd=stockfish -each proto=uci depth=10 option.UCI_LimitStrength=true option.UCI_Elo=1350 tc=40/40 -rounds 1
+
+
+
+rm testStockfish.txt
+echo "#### test 1350" >> testStockfish.txt
+./build/cutechess-cli  -engine cmd=./mychess.sh -engine cmd=stockfish -each proto=uci depth=10 option.UCI_LimitStrength=true option.UCI_Elo=1350 tc=400/400 -rounds 100 >> testStockfish.txt
+echo "#### test 1500" >> testStockfish.txt
+./build/cutechess-cli  -engine cmd=./mychess.sh -engine cmd=stockfish -each proto=uci depth=10 option.UCI_LimitStrength=true option.UCI_Elo=1500 tc=400/400 -rounds 100 >> testStockfish.txt
+echo "#### test 1650" >> testStockfish.txt
+./build/cutechess-cli  -engine cmd=./mychess.sh -engine cmd=stockfish -each proto=uci depth=10 option.UCI_LimitStrength=true option.UCI_Elo=1650 tc=400/400 -rounds 100 >> testStockfish.txt
+echo "#### test 1800" >> testStockfish.txt
+./build/cutechess-cli  -engine cmd=./mychess.sh -engine cmd=stockfish -each proto=uci depth=10 option.UCI_LimitStrength=true option.UCI_Elo=1800 tc=400/400 -rounds 100 >> testStockfish.txt
+
+BauChess 1565 Elo +/- 100
+
+
+ */
 public class ChessUCI {
 
     Chess chess = new Chess();
@@ -73,8 +107,8 @@ public class ChessUCI {
                 }
             } else if (line.startsWith("position fen ")) {
                 // not supported
-                chess = new Chess();
-                String fen = line.substring("position fen ".length());
+                // chess = new Chess();
+                // String fen = line.substring("position fen ".length());
                 // e.g.
                 // position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 moves e2e4
             } else if (line.startsWith("print")) {
@@ -97,6 +131,8 @@ public class ChessUCI {
             } else if (line.startsWith("go movetime ")) {
                 int timeMillis = Integer.parseInt(line.substring("go movetime ".length()));
                 move(timeMillis);
+            } else if (line.startsWith("go ")) {
+                move(1000);
             } else if (line.equals("go")) {
                 move(100);
             }
@@ -107,8 +143,8 @@ public class ChessUCI {
     void move(int timeMillis) {
         boolean black = chess.blackTurn;
         chess.blackTurn = !chess.blackTurn;
-        long move = chess.negamax(true, 4, black, -Long.MAX_VALUE, Long.MAX_VALUE);
-        // long move = chess.negamax(true, 5, black, -Long.MAX_VALUE, Long.MAX_VALUE);
+        // long move = chess.negamax(true, 4, black, -Long.MAX_VALUE, Long.MAX_VALUE);
+        long move = chess.negamax(true, 5, black, -Long.MAX_VALUE, Long.MAX_VALUE);
         int source = (int) ((move >>> 16) & 0xff);
         int pieceMoved = chess.board[source];
         int target = (int) ((move >>> 8) & 0xff);

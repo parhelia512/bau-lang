@@ -318,14 +318,14 @@ void _main() {
         while (1 == 1) {
             int64_t a = 0;
             while (1) {
-                int64_t _t0 = get_1(a);
-                if (_t0 == 0) {
+                int64_t _t1000 = get_1(a);
+                if (_t1000 == 0) {
                     printf("...is sunday\n");
                 } else {
-                    if (_t0 == 1) {
+                    if (_t1000 == 1) {
                         printf("...is monday\n");
                     } else {
-                        if ((_t0 == 2) || (_t0 == 3)) {
+                        if ((_t1000 == 2) || (_t1000 == 3)) {
                             printf("...is tuesday or wednesday\n");
                         } else {
                             printf("...is some other day\n");

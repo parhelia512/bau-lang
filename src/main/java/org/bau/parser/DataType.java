@@ -11,6 +11,7 @@ import org.bau.parser.expr.New;
 import org.bau.parser.expr.NullValue;
 import org.bau.parser.expr.NumberValue;
 import org.bau.parser.expr.Variable;
+import org.bau.parser.stmt.Comment;
 import org.bau.runtime.Value;
 import org.bau.runtime.Value.ValueNull;
 
@@ -295,6 +296,9 @@ public class DataType implements Section {
 
     public String formatSource() {
         StringBuilder buff = new StringBuilder();
+        if (comments != null) {
+            buff.append(Comment.formatSource(comments));
+        }
         if (traitDefinition != null) {
             buff.append("trait ");
         } else if (enumExpressions != null) {
@@ -330,7 +334,7 @@ public class DataType implements Section {
             for (Entry<Variable, Expression> e : enumExpressions.entrySet()) {
                 buff.append("    " + e.getKey().name());
                 if (e.getValue() != null) {
-                    buff.append(": " + e.getValue().format());
+                    buff.append(" : " + e.getValue().format());
                 }
                 buff.append("\n");
             }
@@ -340,8 +344,7 @@ public class DataType implements Section {
                 buff.append("    " + v.format() + " " + v.type().format()).append("\n");
             }
         }
-        buff.append("\n");
-        return buff.toString();
+        return buff.toString().trim() + "\n";
     }
 
     public String format() {

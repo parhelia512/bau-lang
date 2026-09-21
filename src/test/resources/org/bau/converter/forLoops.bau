@@ -29,17 +29,16 @@ fun pairs(array T[]) pair(T)
 fun main()
     array : int[5]
     for i := until(array.len)
-        array[i] = i * 10        
+        array[i] = i * 10
     for e := array.elements()
-        println('element ' e)        
+        println('element ' e)
     for p := pairs(array)
         println('index-value-pairs #' p.i ' = ' p.value)
-        
     floats : float[5]
     for i := until(floats.len)
         floats[i] = i * 10 + 0.1
     for e := floats.elements()
-        println('element ' e)        
+        println('element ' e)
     for p := pairs(floats)
         println('index-value-pairs #' p.i ' = ' p.value)
 

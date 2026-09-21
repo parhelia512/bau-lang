@@ -36,16 +36,20 @@ public class FunctionContext {
     }
 
     public int nextTempVariableId() {
-        if ("main".equals(currentFunctionName.name)) {
-            return program.nextTempVariableIdGlobalScope();
+        if ("_init".equals(currentFunctionName.name)) {
+            return 1000 + program.nextTempVariableIdGlobalScope();
         }
         return nextTempVariableId++;
     }
 
-    public void reset(FullName functionName) {
-        currentFunctionName = functionName;
-        blockList.clear();
-        nextTempVariableId = 0;
+    public void setFunctionName(FullName functionName) {
+        this.currentFunctionName = functionName;
+        if (nextTempVariableId != 0) {
+            throw new IllegalStateException();
+        }
+        if (blockList.size() != 0) {
+            throw new IllegalStateException();
+        }
     }
 
     /**

@@ -370,23 +370,23 @@ int main(int _argc, char *_argv[]) {
     return 0;
 }
 void _main() {
-    string_array* _t0 = string_array_new(3);
-    _incUseStack(_t0);
-    y = _t0;
-    string _t1 = str_1(string_1000);
-    string_copy(&_t1);
-    y->data[0] = _t1;
-    string _t2 = str_1(string_1001);
-    string_copy(&_t2);
-    y->data[1] = _t2;
-    string _t3 = str_1(string_1002);
-    string_copy(&_t3);
-    y->data[2] = _t3;
+    string_array* _t1000 = string_array_new(3);
+    _incUseStack(_t1000);
+    y = _t1000;
+    string _t1001 = str_1(string_1000);
+    string_copy(&_t1001);
+    y->data[0] = _t1001;
+    string _t1002 = str_1(string_1001);
+    string_copy(&_t1002);
+    y->data[1] = _t1002;
+    string _t1003 = str_1(string_1002);
+    string_copy(&_t1003);
+    y->data[2] = _t1003;
     printf("%.*s %.*s %.*s\n", _arrayLen(y->data[0].data), y->data[0].data->data, _arrayLen(y->data[1].data), y->data[1].data->data, _arrayLen(y->data[2].data), y->data[2].data->data);
-    _decUseStack(_t0, string_array);
+    _decUseStack(_t1000, string_array);
     _decUseStack(y, string_array);
-    string_free(&_t1);
-    string_free(&_t2);
-    string_free(&_t3);
+    string_free(&_t1001);
+    string_free(&_t1002);
+    string_free(&_t1003);
     _end();
 }

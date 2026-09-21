@@ -55,6 +55,9 @@ public class ChessUI {
                         if (move != 0) {
                             lastBlack = move;
                             c.move(move);
+                            int target = (int) ((move >>> 8) & 0xff);
+                            x = target & 7;
+                            y = target / 8;
                         }
                     }
                     redraw(c, terminal, x, y);

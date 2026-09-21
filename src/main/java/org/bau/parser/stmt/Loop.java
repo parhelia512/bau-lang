@@ -23,6 +23,7 @@ public class Loop implements Statement {
     public ArrayList<Statement> list = new ArrayList<>();
     public ArrayList<Statement> listContinue = new ArrayList<>();
     public Expression condition;
+    public boolean endless;
 
     @Override
     public Statement replace(Variable old, Expression with) {
@@ -121,7 +122,11 @@ public class Loop implements Statement {
     public String format() {
         // TODO this is not correct if continue is used
         StringBuilder buff = new StringBuilder();
-        buff.append("loop " + condition.format() + "\n");
+        buff.append("loop");
+        if (!endless) {
+            buff.append(" " + condition.format());
+        }
+        buff.append("\n");
         for(Statement s : list) {
             buff.append(Statement.indent(s.format()));
         }

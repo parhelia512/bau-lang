@@ -323,12 +323,12 @@ i8_array* string_1001;
 i8_array* string_1002;
 i8_array* string_1003;
 Tree* Tree_2(Tree* left, Tree* right) {
-    Tree* _t1 = Tree_new();
+    Tree* _t0 = Tree_new();
     _incUseStack(left);
-    _t1->left = left;
+    _t0->left = left;
     _incUseStack(right);
-    _t1->right = right;
-    return _t1;
+    _t0->right = right;
+    return _t0;
 }
 int64_t Tree_nodeCount_1(Tree* this) {
     int64_t result = 1;
@@ -398,8 +398,8 @@ void _main() {
         int64_t sum = 0;
         int64_t i = 1;
         while (i <= iterations) {
-            int64_t _t2 = count_1(depth);
-            sum = sum + _t2;
+            int64_t _t0 = count_1(depth);
+            sum = sum + _t0;
             i = i + 1;
         }
         printf("%lld trees of depth %lld; check: %lld\n", (long long)iterations, (long long)depth, (long long)sum);

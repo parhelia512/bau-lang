@@ -327,9 +327,9 @@ int main(int _argc, char *_argv[]) {
     return 0;
 }
 void _main() {
-    i8_array* _t0 = hex_2(0x12fea234, 8);
-    printf("%.*s\n", _arrayLen(_t0), _t0->data);
-    _decUseStack(_t0, i8_array);
+    i8_array* _t1000 = hex_2(0x12fea234, 8);
+    printf("%.*s\n", _arrayLen(_t1000), _t1000->data);
+    _decUseStack(_t1000, i8_array);
     _end();
 }
 /*

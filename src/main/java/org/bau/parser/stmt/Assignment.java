@@ -42,6 +42,7 @@ public class Assignment implements Statement {
     public boolean isGlobalScope;
     public String module;
     public int location;
+    public Expression upperBound;
 
     @Override
     public Assignment replace(Variable old, Expression with) {
@@ -250,6 +251,10 @@ public class Assignment implements Statement {
             buff.append(" = ");
         }
         buff.append(value.format());
+        if (upperBound != null) {
+            buff.append(" .. ");
+            buff.append(upperBound.format());
+        }
         buff.append("\n");
         return buff.toString();
     }

@@ -6,6 +6,7 @@ Try it in the <a href="https://thomasmueller.github.io/bau-lang/">Playground</a>
 
 ## News
 
+* 2026-08-26: Intitialization of a list of variables (`a, b := 0`) is no longer supported, to simplify the parser, and because it prevents `a, b = b, a`.
 * 2026-08-21: <a href="https://thomasmueller.github.io/bau-lang/chess.html">Chess ported to Javascript</a>.
 * 2026-06-24: Modules can have initialization code. Cycles in the imports are detected and disallowed.
 * 2026-06-07: Additional benchmark algorithm NBody.
@@ -94,11 +95,6 @@ Variables without value require a type:
 
     x int
 
-A list of variables can be declared and initialized.
-Here, zero is assigned to both variables:
-
-    x, y := 0
-
 Variables outside of functions (without indentation) are global.
 Names of global constants need to be capitalized,
 and global variables may not be imported.
@@ -163,6 +159,7 @@ They may have a condition:
 
 ### Comments
 
+Comments need to be in separate lines.
 `#` starts a line comment.
 
     # Line comment
@@ -184,6 +181,8 @@ end with the same count of `#`:
 
 Comments before types and functions are
 converted to documentation.
+Comments inside functions need to be indented,
+but the exact indentation is ignored.
 
 ### Literals
 

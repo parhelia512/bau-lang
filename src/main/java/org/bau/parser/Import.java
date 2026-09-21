@@ -42,6 +42,7 @@ public class Import implements Section {
                 buff.append("\n    " + var.name());
             }
         }
+        buff.append("\n");
         return buff.toString();
     }
 

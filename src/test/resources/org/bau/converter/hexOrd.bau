@@ -21,7 +21,7 @@ fun hex(x int, len int) i8[]
         data[i] = c
         y >>= 4
         i -= 1
-  return data
+    return data
 
 println(hex(0x12fea234, 8))
 

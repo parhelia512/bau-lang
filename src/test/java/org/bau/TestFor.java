@@ -41,6 +41,7 @@ fun for range(from int, to int) int
     loop _ < to
         return _
         _ += 1
+
 for a := range(0, 10)
     println(a)
                         """).parse().format());

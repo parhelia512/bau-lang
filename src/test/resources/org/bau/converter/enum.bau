@@ -1,8 +1,8 @@
 enum weekday
-    sunday:    0
+    sunday : 0
     monday
     tuesday
-    wednesday: 3
+    wednesday : 3
     thursday
     friday
     saturday
@@ -17,8 +17,7 @@ for a := until(weekday.saturday + 1)
         println('...is sunday')
     case weekday.monday
         println('...is monday')
-    case weekday.tuesday,
-        weekday.wednesday
+    case weekday.tuesday, weekday.wednesday
         println('...is tuesday or wednesday')
     else
         println('...is some other day')

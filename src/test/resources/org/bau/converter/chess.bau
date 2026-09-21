@@ -18,7 +18,7 @@ fun main()
         break key < 0
         continue key == 0
         switch key
-        case ord('q') 
+        case ord('q')
             break
         case ord(' ')
             if state == 0
@@ -94,16 +94,16 @@ lastBlack := 0
 lastWhite := 0
 
 # constants
-KING   : 1
-QUEEN  : 2
-ROOK   : 3
+KING : 1
+QUEEN : 2
+ROOK : 3
 BISHOP : 4
 KNIGHT : 5
-PAWN   : 6
-BLACK  : 6
+PAWN : 6
+BLACK : 6
 
 # board
-board: int[64]
+board : int[64]
 castlingFlags := 0
 pawnMoved2 := 0
 turn := 0
@@ -373,9 +373,9 @@ fun move(source int, target int) int
             else
                 board[target + 1] = board[target - 2]
                 board[target - 2] = 0
-    return (old << 40) | (oldPawnMoved << 32) | 
-            (captured << 24) | (source << 16) | 
-            (target << 8) | oldCastlingFlags
+    return (old << 40) | (oldPawnMoved << 32) |
+        (captured << 24) | (source << 16) |
+        (target << 8) | oldCastlingFlags
 
 fun undo(move int)
     turn -= 1

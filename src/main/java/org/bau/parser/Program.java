@@ -16,7 +16,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -30,6 +29,7 @@ import org.bau.parser.expr.StringLiteral;
 import org.bau.parser.expr.Variable;
 import org.bau.parser.stmt.Assignment;
 import org.bau.parser.stmt.Catch;
+import org.bau.parser.stmt.Comment;
 import org.bau.parser.stmt.Free;
 import org.bau.parser.stmt.If;
 import org.bau.parser.stmt.Loop;
@@ -682,10 +682,9 @@ public class Program {
             if (def.isUsed()) {
                 def.borrowCheck();
                 context.function = def;
-                if (def.comment != null) {
-                    buff.append("/*\n");
-                    buff.append(Statement.indent(def.comment));
-                    buff.append("*/\n");
+                if (def.getCommentText() != null) {
+                    buff.append(Comment.toC(def.getCommentText()));
+                    buff.append("\n");
                 }
                 buff.append(def.declarationToC());
             }

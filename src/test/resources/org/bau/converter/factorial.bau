@@ -7,7 +7,7 @@ fun main()
     i := 0
     loop i <= 10
         println('Factorial of ' i ' = ' factorial(i))
-        i += 1   
+        i += 1
 
 ## Expected
 Factorial of 0 = 1

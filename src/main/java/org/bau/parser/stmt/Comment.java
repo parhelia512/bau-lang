@@ -16,6 +16,7 @@ import org.bau.runtime.Memory;
 public class Comment implements Statement, Section {
 
     private ArrayList<String> list = new ArrayList<>();
+    public int indent = -1;
 
     public Comment(String text) {
         if (text != null) {
@@ -24,15 +25,12 @@ public class Comment implements Statement, Section {
     }
 
     public void add(String additional) {
-        if (additional == null) {
-            System.out.println("??");
-        }
         list.add(additional);
     }
 
     public String getText() {
         StringBuilder buff = new StringBuilder();
-        for(String c : list) {
+        for (String c : list) {
             if (buff.length() > 0) {
                 buff.append("\n");
             }
@@ -72,13 +70,16 @@ public class Comment implements Statement, Section {
     public void optimize(ProgramContext context) {
     }
 
-    @Override
-    public String toC() {
-        String text = getText();
+    public static String toC(String text) {
         if (text.indexOf("*/") >= 0) {
             text = text.replace("*/", "* /");
         }
         return "/* " + text + " */";
+    }
+
+    @Override
+    public String toC() {
+        return toC(getText());
     }
 
     @Override
@@ -90,10 +91,19 @@ public class Comment implements Statement, Section {
     public String formatSource() {
         StringBuilder buff = new StringBuilder();
         for (String c : list) {
-            buff.append(c);
+            if (indent >= 0) {
+                for (int i = 0; i < indent; i++) {
+                    buff.append(" ");
+                }
+            }
+            buff.append(c.trim());
             buff.append("\n");
         }
         return buff.toString();
+    }
+
+    public static String formatSource(String comments) {
+        return comments;
     }
 
     @Override

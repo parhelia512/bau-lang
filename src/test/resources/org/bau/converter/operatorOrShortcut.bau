@@ -15,7 +15,6 @@ fun main()
         println('  true')
     else
         println('  false')
-    
     println('testing and: call first')
     if call('a', a) > 1 and call('b', b) < 1
         println('  true')
@@ -26,7 +25,6 @@ fun main()
         println('  true')
     else
         println('  false')
-    
     a = 1
     b = 1
     println('testing and loop')
@@ -39,7 +37,6 @@ fun main()
     loop call('a', a) > 0 and call('b', b) > 0
         println('  dec b')
         b -= 1
-    
     a = 1
     b = 1
     println('testing or loop')

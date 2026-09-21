@@ -323,12 +323,12 @@ i8_array* string_1003;
 i8_array* string_1004;
 int64_t randomSeed;
 Tree* Tree_2(Tree* left, Tree* right) {
-    Tree* _t1 = Tree_new();
+    Tree* _t0 = Tree_new();
     _incUseStack(left);
-    _t1->left = left;
+    _t0->left = left;
     _incUseStack(right);
-    _t1->right = right;
-    return _t1;
+    _t0->right = right;
+    return _t0;
 }
 int64_t Tree_nodeCount_1(Tree* this) {
     int64_t result = 1;
@@ -384,8 +384,8 @@ void _main() {
     Tree* stretch = with_1(4);
     printf("ref count\n");
     if (stretch != NULL) {
-        int64_t _t2 = Tree_nodeCount_1(stretch);
-        printf("stretch tree of depth %lld check: %lld\n", (long long)4, (long long)_t2);
+        int64_t _t0 = Tree_nodeCount_1(stretch);
+        printf("stretch tree of depth %lld check: %lld\n", (long long)4, (long long)_t0);
     }
     _decUseStack(stretch, Tree);
     stretch = NULL;
@@ -397,16 +397,16 @@ void _main() {
         int64_t i = 1;
         while (i <= iterations) {
             Tree* t = with_1(depth);
-            int64_t _t3 = Tree_nodeCount_1(t);
-            check = check + _t3;
+            int64_t _t1 = Tree_nodeCount_1(t);
+            check = check + _t1;
             i = i + 1;
             _decUseStack(t, Tree);
         }
         printf("%lld trees of depth %lld check: %lld\n", (long long)iterations, (long long)depth, (long long)check);
         depth = depth + 2;
     }
-    int64_t _t4 = Tree_nodeCount_1(longLived);
-    printf("long lived tree of depth %lld check: %lld\n", (long long)3, (long long)_t4);
+    int64_t _t2 = Tree_nodeCount_1(longLived);
+    printf("long lived tree of depth %lld check: %lld\n", (long long)3, (long long)_t2);
     _decUseStack(longLived, Tree);
     _decUseStack(stretch, Tree);
     _end();

@@ -33,6 +33,7 @@ public class Operation implements Expression {
     public Expression left;
     public String operator;
     public Expression right;
+    public boolean newlineAfterOperator;
 
     public static Operation buildAndOptimize(Expression left, String operator, Expression right) {
         if (left != null) {
@@ -65,28 +66,6 @@ public class Operation implements Expression {
     @Override
     public Expression simplify() {
         return this;
-    }
-
-    private static String addBracketsIfNeeded(Expression expr) {
-        String s = expr.format();
-        // TODO this is a hack
-        if (expr instanceof Operation) {
-            if (!s.startsWith("(")) {
-                return "( " + s + " )";
-            }
-        }
-        return s;
-    }
-
-    private static String addBracketsIfNeededToC(Expression expr) {
-        String s = expr.toC();
-        // TODO this is a hack
-        if (expr instanceof Operation) {
-            if (!s.startsWith("(")) {
-                return "( " + s + " )";
-            }
-        }
-        return s;
     }
 
     public DataType canThrowException() {
@@ -453,10 +432,53 @@ public class Operation implements Expression {
     }
 
     public String format() {
-        if (left == null) {
-            return operator + addBracketsIfNeeded(right);
+        return format(0, false);
+    }
+
+    public String format(int parentPrecedence, boolean isRightChild) {
+        int prec = getPrecedence(operator);
+        boolean needsParens = false;
+        if (prec < parentPrecedence && left != null) {
+            needsParens = true;
+        } else if (prec == parentPrecedence  && isRightChild) {
+            needsParens = true;
         }
-        return addBracketsIfNeeded(left) + " " + operator + " " + addBracketsIfNeeded(right);
+        String result;
+        if (left == null) {
+            result = right.format(prec, false);
+            if (result.startsWith(operator)) {
+                // "- -x" instead of "--x"
+                result = " " + result;
+            } else if ("not".equals(operator)) {
+                // "not x" instead of "notx"
+                result = " " + result;
+            }
+            result = operator + result;
+        } else {
+            result = left.format(prec, false);
+            result += " " + operator;
+            if (newlineAfterOperator) {
+                result += "\n    ";
+            } else {
+                result += " ";
+            }
+            result += right.format(prec, true);
+        }
+        if (needsParens) {
+            result = "(" + result + ")";
+        }
+        return result;
+    }
+
+    private static String addBracketsIfNeededToC(Expression expr) {
+        String s = expr.toC();
+        // TODO this is a hack
+        if (expr instanceof Operation) {
+            if (!s.startsWith("(")) {
+                return "( " + s + " )";
+            }
+        }
+        return s;
     }
 
     @Override

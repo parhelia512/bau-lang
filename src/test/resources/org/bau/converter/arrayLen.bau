@@ -1,10 +1,10 @@
 fun printLen(data i8[])
-  println(data.len)
+    println(data.len)
 
 fun test()
-  data : i8[10]
-  println(data.len)
-  printLen(data)
+    data : i8[10]
+    println(data.len)
+    printLen(data)
 
 test()
 

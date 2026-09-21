@@ -62,7 +62,7 @@ fun primeSum2(limit int) int
             sum += i
         i += 2
     return sum
-  
+
 fun main()
     # for i := range(0, 10)
     #     start : Utils.getNanoTime()

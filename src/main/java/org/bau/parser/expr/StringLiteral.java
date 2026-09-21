@@ -18,25 +18,27 @@ public class StringLiteral implements Expression {
 
     public String value;
     public ValueI8Array array;
+    public boolean raw;
     private DataType type;
     private long reference;
     private boolean used;
 
-    public static StringLiteral buildStringLiteral(String value, DataType type, Program program) {
+    public static StringLiteral buildStringLiteral(String value, DataType type, Program program, boolean raw) {
         StringLiteral n = program.getStringLiteral(value);
         if (n != null) {
             return n;
         }
-        return new StringLiteral(value, type, program);
+        return new StringLiteral(value, type, program, raw);
     }
 
-    public static StringLiteral newStringLiteral(String value) {
-        return new StringLiteral(value, null, null);
+    public static StringLiteral newStringLiteral(String value, boolean raw) {
+        return new StringLiteral(value, null, null, raw);
     }
 
-    private StringLiteral(String value, DataType type, Program program) {
+    private StringLiteral(String value, DataType type, Program program, boolean raw) {
         this.value = value;
         this.type = type;
+        this.raw = raw;
         if (program != null) {
             this.reference = program.addStringConstant(value, this);
             byte[] data = value.getBytes(StandardCharsets.UTF_8);
@@ -77,11 +79,13 @@ public class StringLiteral implements Expression {
     public static String escape(String s) {
         byte[] utf8 = s.getBytes(StandardCharsets.UTF_8);
         StringBuilder buff = new StringBuilder();
-        for(byte b : utf8) {
+        for (byte b : utf8) {
             int c = b & 0xff;
             if (c < ' ' || c >= 127) {
                 if (c == '\n') {
                     buff.append("\\n");
+                } else if (c == '\r') {
+                    buff.append("\\r");
                 } else if (c == '\t') {
                     buff.append("\\t");
                 } else {
@@ -100,12 +104,59 @@ public class StringLiteral implements Expression {
         return buff.toString();
     }
 
-    public String format() {
+    public static String quote(String s) {
         StringBuilder buff = new StringBuilder();
         buff.append('\'');
-        buff.append(escape(value));
+        buff.append(escape(s));
         buff.append('\'');
         return buff.toString();
+    }
+
+    public static String quoteRaw(String value) {
+        StringBuilder buff = new StringBuilder();
+        boolean multiline = value.startsWith("`") || value.endsWith("`");
+        int tickCount = 1;
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (c == '\n') {
+                multiline = true;
+            }
+            if (c == '`') {
+                int j = i + 1;
+                for (; j < value.length(); j++) {
+                    if (value.charAt(j) != '`') {
+                        break;
+                    }
+                }
+                tickCount = Math.max(tickCount, j - i + 1);
+                i = j;
+            }
+        }
+        for (int i = 0; i < tickCount; i++) {
+            buff.append('`');
+        }
+        if (multiline) {
+            buff.append('\n');
+        }
+        buff.append(value);
+        if (multiline) {
+            buff.append('\n');
+        }
+        for (int i = 0; i < tickCount; i++) {
+            buff.append('`');
+        }
+        String s = buff.toString();
+        if (multiline) {
+            s = Statement.indent(s).trim();
+        }
+        return s;
+    }
+
+    public String format() {
+        if (raw) {
+            return quoteRaw(value);
+        }
+        return quote(value);
     }
 
     @Override

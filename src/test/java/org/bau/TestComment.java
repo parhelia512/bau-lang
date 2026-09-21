@@ -13,7 +13,6 @@ public class TestComment {
                 + "a = 2\n"
                 + "a = 3\n"
                 + "a = 4\n"
-                + "a = 5\n"
                 + "",
                 new Parser("""
                         a := 1
@@ -29,7 +28,6 @@ public class TestComment {
                         ##  more
                         ###
                         a = 4
-                        ## short block comment ## a = 5
                         """).parse().format());
     }
 

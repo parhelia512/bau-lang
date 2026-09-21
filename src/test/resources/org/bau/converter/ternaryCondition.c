@@ -328,14 +328,14 @@ void _main() {
     while (1 == 1) {
         int64_t i = -1;
         while (i < 2) {
-            int64_t _t0 = when_int_3(i < 0, - i, i);
-            printf("abs(%lld)= %lld\n", (long long)i, (long long)_t0);
-            int64_t _t1 = int_then_int_3((i < 0), - i, i);
-            printf("abs(%lld)= %lld\n", (long long)i, (long long)_t1);
-            i8_array* _t2 = typeName_int_1(1);
-            printf("typeName: %.*s\n", _arrayLen(_t2), _t2->data);
+            int64_t _t1000 = when_int_3(i < 0, - i, i);
+            printf("abs(%lld)= %lld\n", (long long)i, (long long)_t1000);
+            int64_t _t1001 = int_then_int_3((i < 0), - i, i);
+            printf("abs(%lld)= %lld\n", (long long)i, (long long)_t1001);
+            i8_array* _t1002 = typeName_int_1(1);
+            printf("typeName: %.*s\n", _arrayLen(_t1002), _t1002->data);
             i = i + 1;
-            _decUseStack(_t2, i8_array);
+            _decUseStack(_t1002, i8_array);
         }
         break;
     }

@@ -10,7 +10,7 @@ fun bubbleSort(T type, array T..)
                 swapped = 1
         n -= 1
         break swapped == 0
-    for i:= until(array.len)
+    for i := until(array.len)
         println(array[i])
 
 bubbleSort(int, 1, 3, 2)

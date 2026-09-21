@@ -24,7 +24,7 @@ type fileContent
 enum editMode
     normal
     quitAgain
-    find  
+    find
 
 fun refreshScreen()
     buff := StringBuilder()
@@ -137,10 +137,10 @@ fun insertByte(add i8)
             new[i + 1] = line.data[i]
         for i := until(x)
             new[i] = line.data[i]
-        new[x] = add          
+        new[x] = add
         n : string()
         n.data = new
-        lines.array[y] = n        
+        lines.array[y] = n
 
 fun removeByte()
     currentFile.modified = 1
@@ -150,7 +150,7 @@ fun removeByte()
     x : cursorX + offsetX - 1
     if line.data.len < x
         return
-    if x == 0 
+    if x == 0
         if y == 0
             return
         # combine lines
@@ -230,7 +230,7 @@ fun save()
     for i := until(lines.size)
         size += lines.array[i].data.len
     data : StringBuilder()
-    data.data = i8[size];
+    data.data = i8[size]
     for i := until(lines.size)
         data.append(lines.array[i].data)
         data.append('\n')
@@ -240,8 +240,8 @@ fun save()
         return
     f.write(data.data, 0, size)
     f.close()
-    currentFile.modified = 0 
-    
+    currentFile.modified = 0
+
 fun main()
     if not Terminal.isTerminal()
         println('Not a terminal')

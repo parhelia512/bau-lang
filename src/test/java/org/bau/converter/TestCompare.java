@@ -20,9 +20,10 @@ import org.junit.Test;
 cd got
 find . -name "*.c" -exec gcc {} -o {}.out \;
 find . -name "*.c.out" -exec echo "############################# " {} \; -exec {} \; > out.txt
+# chess: [q], block game: [esc]
 open out.txt
-cd ..
 
+cd ..
 cp got/*.c src/test/resources/org/bau/converter/
 
 find src/test -name "*.c.out" -delete

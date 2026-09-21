@@ -167,9 +167,9 @@ public class Std {
         if (program.getFunctionIfExists(null, "", "until", 1) != null) {
             return;
         }
-        String type = "fun for until(lessThan int) 0..lessThan\n"
+        String type = "fun for until(lessThan int) 0 .. lessThan\n"
                 + "    if lessThan > 0\n"
-                + "        _ := 0..lessThan\n"
+                + "        _ := 0 .. lessThan\n"
                 + "        loop\n"
                 + "            return _\n"
                 + "            break _ + 1 >= lessThan\n"

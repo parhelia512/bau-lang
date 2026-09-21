@@ -11,10 +11,10 @@ fun get(key int) Value?
 fun test()
     a : get(0)
     if a
-      println(a.data)
+        println(a.data)
     b : get(1)
     if b
-      println(b.data)
+        println(b.data)
 
 test()
 

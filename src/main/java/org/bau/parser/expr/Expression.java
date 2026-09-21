@@ -26,6 +26,10 @@ public interface Expression {
 
     Expression simplify();
 
+    default String format(int parentPrecedence, boolean isRightChild) {
+        return format();
+    }
+
     String format();
 
     String toC();

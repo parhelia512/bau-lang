@@ -10,7 +10,8 @@ fun main()
     n := 10_000
     if Env.argCount() > 1
         n = Int.parseInt(Env.arg(1))
-    k, i := 0
+    k := 0
+    i := 0
     buff : i8[10]
     loop i < n
         k += 1
@@ -25,7 +26,8 @@ fun main()
             println(buff ' : ' i)
 
 acc bigInt := 0
-den, num bigInt := 1
+den bigInt := 1
+num bigInt := 1
 
 fun extractDigit(nth int) int
     return num.mul(nth).add(acc).div(den).toInt()

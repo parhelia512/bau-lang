@@ -96,7 +96,7 @@ fun parse(regex i8[]) List(Token) throws exception
                     i += 1
                     c = regex[i]
                     t.data.array[t.data.size - 1] = c
-                else 
+                else
                     t.data.add(c)
                     t.data.add(c)
         else

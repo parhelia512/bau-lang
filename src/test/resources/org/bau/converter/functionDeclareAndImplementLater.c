@@ -323,13 +323,13 @@ int main(int _argc, char *_argv[]) {
     return 0;
 }
 void _main() {
-    int64_t _t0 = odd_1(10);
-    printf("odd(10)=%lld\n", (long long)_t0);
-    int64_t _t1 = even_1(10);
-    printf("even(10)=%lld\n", (long long)_t1);
-    int64_t _t2 = odd_1(11);
-    printf("odd(11)=%lld\n", (long long)_t2);
-    int64_t _t3 = even_1(11);
-    printf("even(11)=%lld\n", (long long)_t3);
+    int64_t _t1000 = odd_1(10);
+    printf("odd(10)=%lld\n", (long long)_t1000);
+    int64_t _t1001 = even_1(10);
+    printf("even(10)=%lld\n", (long long)_t1001);
+    int64_t _t1002 = odd_1(11);
+    printf("odd(11)=%lld\n", (long long)_t1002);
+    int64_t _t1003 = even_1(11);
+    printf("even(11)=%lld\n", (long long)_t1003);
     _end();
 }

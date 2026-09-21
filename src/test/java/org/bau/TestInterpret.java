@@ -14,19 +14,26 @@ public class TestInterpret {
         Program p = new Parser("println('Hello World')").parse();
         assertEquals("Hello World\n", p.run());
     }
-    
+
     @Test
     public void calc() {
         assertEquals("1 million + 1 = 1000001\n", new Parser(
                 "println('1 million + 1 = ', 1_000_000 + 1)"
         ).parse().run());
     }
-    
+
     @Test
     public void calc2() {
         assertEquals("1 million + 1 = 1000001\n", new Parser(
                 "println('1 million + 1 = ', 1_000_000 + 1,)"
         ).parse().run());
-    }    
-    
+    }
+
+    @Test
+    public void calc3() {
+        assertEquals("1 million + 1 = 1000001\n", new Parser(
+                "println('1 million + 1 = ' (1_000_000 + 1))"
+        ).parse().run());
+    }
+
 }

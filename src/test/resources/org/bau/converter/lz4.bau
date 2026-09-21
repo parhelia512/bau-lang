@@ -1,5 +1,5 @@
 import org.bau.compress.Lz4Tool
-    
+
 fun main()
     Lz4Tool.main()
 

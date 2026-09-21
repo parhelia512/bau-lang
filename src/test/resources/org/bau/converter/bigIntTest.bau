@@ -5,7 +5,7 @@ fun macro assert(x int)
     if not x
         println('assertion failed: ' x.source)
     # continue
-        
+
 fun main()
     # add
     assert(newBigInt(123).
@@ -38,7 +38,7 @@ fun main()
     # compare
     assert(newBigInt(10).compare(newBigInt(20)) == -1)
     assert(newBigInt(10).compare(newBigInt(-20)) == 1)
-    assert(newBigInt(10).compare(newBigInt(10)) == 0)    
+    assert(newBigInt(10).compare(newBigInt(10)) == 0)
     # signum
     assert(newBigInt(123).signum() == 1)
     assert(newBigInt(0).signum() == 0)

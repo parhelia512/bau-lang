@@ -35,11 +35,15 @@ public class Call implements Statement, Expression, LeftValue {
     public Expression on;
 
     public ArrayList<Expression> args = new ArrayList<>();
+    public ArrayList<Boolean> commas = new ArrayList<>();
+    public ArrayList<Boolean> newlines = new ArrayList<>();
 
     public FunctionDefinition def;
     public String module;
     public String name;
     public int location;
+
+    public boolean newlineAfterDot;
 
     @Override
     public void setLocation(String module, int location) {
@@ -370,6 +374,9 @@ public class Call implements Statement, Expression, LeftValue {
         if (on != null) {
             buff.append(on.format()).append(".");
         }
+        if (newlineAfterDot) {
+            buff.append("\n    ");
+        }
         if (def != null) {
             buff.append(def.getFullName().name);
         } else {
@@ -378,7 +385,18 @@ public class Call implements Statement, Expression, LeftValue {
         buff.append('(');
         for (int i = 0; i < args.size(); i++) {
             if (i > 0) {
-                buff.append(", ");
+                if (commas.isEmpty()) {
+                    buff.append(", ");
+                } else {
+                    if (commas.get(i)) {
+                        buff.append(",");
+                    }
+                    if (newlines.get(i)) {
+                        buff.append("\n    ");
+                    } else {
+                        buff.append(" ");
+                    }
+                }
             }
             buff.append(args.get(i).format());
         }

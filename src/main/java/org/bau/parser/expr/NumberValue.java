@@ -33,6 +33,10 @@ public class NumberValue implements Expression {
         return new NumberValue("" + value, new Value.ValueInt(value), DataType.INT_TYPE, false);
     }
 
+    public static Expression valueOf(String token, long value) {
+        return new NumberValue(token, new Value.ValueInt(value), DataType.INT_TYPE, false);
+    }
+
     @Override
     public Value eval(Memory memory) {
         return value;

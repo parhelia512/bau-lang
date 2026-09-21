@@ -28,7 +28,7 @@ public class TestParser {
                         A : 1 +
                             1
                         println('Hello ',
-                              'world')
+                            'world')
                         """).parse().format());
     }
 
@@ -54,10 +54,10 @@ println('end')
                 """,
                 new Parser("a:=1\n" +
                         "loop 1\n" +
-                        "  break a>10\n" +
-                        "  continue a<10\n" +
-                        "  println(a)\n" +
-                        "  a+=1\n" +
+                        "    break a>10\n" +
+                        "    continue a<10\n" +
+                        "    println(a)\n" +
+                        "    a+=1\n" +
                         "println('end')\n").parse().format());
         assertEquals("""
 a := 1

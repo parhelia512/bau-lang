@@ -322,12 +322,12 @@ i8_array* string_1003;
 i8_array* string_1004;
 int64_t randomSeed;
 Tree_owned* Tree_2(Tree_owned* left, Tree_owned* right) {
-    Tree_owned* _t1 = Tree_owned_new();
-    _t1->left = left;
+    Tree_owned* _t0 = Tree_owned_new();
+    _t0->left = left;
     left = NULL;
-    _t1->right = right;
+    _t0->right = right;
     right = NULL;
-    return _t1;
+    return _t0;
 }
 int64_t Tree_owned_nodeCount_1(Tree_owned* this) {
     int64_t result = 1;
@@ -381,8 +381,8 @@ void _main() {
     Tree_owned* stretch = with_1(4);
     printf("ownership / borrowing\n");
     if (stretch != NULL) {
-        int64_t _t2 = Tree_owned_nodeCount_1(stretch);
-        printf("stretch tree of depth %lld check: %lld\n", (long long)4, (long long)_t2);
+        int64_t _t0 = Tree_owned_nodeCount_1(stretch);
+        printf("stretch tree of depth %lld check: %lld\n", (long long)4, (long long)_t0);
     }
     Tree_owned_free(stretch);
     stretch = NULL;
@@ -394,16 +394,16 @@ void _main() {
         int64_t i = 1;
         while (i <= iterations) {
             Tree_owned* t = with_1(depth);
-            int64_t _t3 = Tree_owned_nodeCount_1(t);
-            check = check + _t3;
+            int64_t _t1 = Tree_owned_nodeCount_1(t);
+            check = check + _t1;
             i = i + 1;
             Tree_owned_free(t);
         }
         printf("%lld trees of depth %lld check: %lld\n", (long long)iterations, (long long)depth, (long long)check);
         depth = depth + 2;
     }
-    int64_t _t4 = Tree_owned_nodeCount_1(longLived);
-    printf("long lived tree of depth %lld check: %lld\n", (long long)3, (long long)_t4);
+    int64_t _t2 = Tree_owned_nodeCount_1(longLived);
+    printf("long lived tree of depth %lld check: %lld\n", (long long)3, (long long)_t2);
     Tree_owned_free(longLived);
     Tree_owned_free(stretch);
     _end();

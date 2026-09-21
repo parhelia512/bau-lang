@@ -339,11 +339,11 @@ int main(int _argc, char *_argv[]) {
 void _main() {
     ticks = 0;
     ticks = 0;
-    int64_t _t0 = fibonacciRecursive_1(20);
-    printf("fibonacci(20) recursive: %lld, ticks: %lld\n", (long long)_t0, (long long)ticks);
+    int64_t _t1000 = fibonacciRecursive_1(20);
+    printf("fibonacci(20) recursive: %lld, ticks: %lld\n", (long long)_t1000, (long long)ticks);
     ticks = 0;
-    int64_t _t1 = fibonacciIterative_1(20);
-    printf("fibonacci(20) iterative: %lld, ticks: %lld\n", (long long)_t1, (long long)ticks);
+    int64_t _t1001 = fibonacciIterative_1(20);
+    printf("fibonacci(20) iterative: %lld, ticks: %lld\n", (long long)_t1001, (long long)ticks);
     ticks = 0;
     printf("fibonacci(20) const:     %lld, ticks: %lld\n", (long long)6765, (long long)ticks);
     _end();

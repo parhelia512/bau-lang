@@ -10,14 +10,14 @@ type Customer
 
 fun main()
     db : Sqlite3.open('demo.db')
-    if db 
+    if db
         db.dropTable(Customer)
         db.createTable(Customer)
         db.insert(newCustomer(0, 'James'))
         db.insert(newCustomer(1, 'Sarah'))
         db.insert(newCustomer(2, 'David'))
         list : db.from(Customer).where(it.id > 0).
-                orderBy(it.name).select()
+            orderBy(it.name).select()
         for i := until(list.size)
             u : list.get(i)
             break u == null

@@ -28,14 +28,14 @@ fun murmur3_32_old(data i8[]) i32
     c1 : i32(0xcc9e2d51)
     c2 : i32(0x1b873593)
     h := i32(0)
-    i := 0..data.len
+    i := 0 .. data.len
     if data.len > 3
-        j := 0..data.len - 3
+        j := 0 .. data.len - 3
         loop 1
             x := i32(((data[j]! & 0xff)) |
-                    ((data[j + 1]! & 0xff) << 8) |
-                    ((data[j + 2]! & 0xff) << 16) |
-                    ((data[j + 3]! & 0xff) << 24))
+                ((data[j + 1]! & 0xff) << 8) |
+                ((data[j + 2]! & 0xff) << 16) |
+                ((data[j + 3]! & 0xff) << 24))
             x *= c1
             x = rotLefti32(x, 15)
             x *= c2
@@ -78,14 +78,14 @@ fun murmur3_32(data i8[]) i32
     c1 : i32(0xcc9e2d51)
     c2 : i32(0x1b873593)
     h := i32(0)
-    i := 0..data.len
+    i := 0 .. data.len
     if data.len > 3
-        j := 0..data.len - 3
+        j := 0 .. data.len - 3
         loop 1
             x := i32(((data[j]! & 0xff)) |
-                    ((data[j + 1]! & 0xff) << 8) |
-                    ((data[j + 2]! & 0xff) << 16) |
-                    ((data[j + 3]! & 0xff) << 24))
+                ((data[j + 1]! & 0xff) << 8) |
+                ((data[j + 2]! & 0xff) << 16) |
+                ((data[j + 3]! & 0xff) << 24))
             x *= c1
             x = rotLefti32(x, 15)
             x *= c2
@@ -118,7 +118,6 @@ fun murmur3_32(data i8[]) i32
     h *= 0xc2b2ae35
     h ^= h >> 16
     return h
-
 
 println(hex(murmur3_32(''), 8))
 println(hex(murmur3_32('a'), 8))
